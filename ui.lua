@@ -1,13 +1,21 @@
--- MeisterUI v2.0 (FULLY WORKING)
+-- MeisterUI v2.0 (NO ANIMATIONS - WORKING)
 local MeisterUI = {}
 
 local TweenService = game:GetService("TweenService")
 local CoreGui = game:GetService("CoreGui")
 local UserInputService = game:GetService("UserInputService")
-local TextService = game:GetService("TextService")
+local Players = game:GetService("Players")
 
+local LocalPlayer = Players.LocalPlayer
+
+-- Выбираем родителя для GUI
 local ParentGui = CoreGui
-if gethui then ParentGui = gethui() end
+if not ParentGui then
+    ParentGui = LocalPlayer:FindFirstChild("PlayerGui")
+end
+if not ParentGui then
+    error("No GUI parent found")
+end
 
 local ScreenObject = Instance.new("ScreenGui")
 ScreenObject.Name = "MeisterUI_Environment"
@@ -16,6 +24,7 @@ ScreenObject.ResetOnSpawn = false
 ScreenObject.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 ScreenObject.Parent = ParentGui
 
+-- Уведомления (упрощённые)
 local NotifContainer = Instance.new("Frame")
 NotifContainer.Name = "NotifContainer"
 NotifContainer.Parent = ScreenObject
@@ -30,42 +39,6 @@ NotifLayout.SortOrder = Enum.SortOrder.LayoutOrder
 NotifLayout.VerticalAlignment = Enum.VerticalAlignment.Bottom
 NotifLayout.Padding = UDim.new(0, 10)
 
-local Utility = {}
-function Utility:Tween(object, info, properties)
-    local t = TweenService:Create(object, TweenInfo.new(unpack(info)), properties)
-    t:Play()
-    return t
-end
-
-function Utility:MakeDraggable(topbar, object)
-    local Dragging, DragInput, DragStart, StartPosition
-    topbar.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            Dragging = true
-            DragStart = input.Position
-            StartPosition = object.Position
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then
-                    Dragging = false
-                end
-            end)
-        end
-    end)
-    topbar.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement then
-            DragInput = input
-        end
-    end)
-    UserInputService.InputChanged:Connect(function(input)
-        if input == DragInput and Dragging then
-            local delta = input.Position - DragStart
-            Utility:Tween(object, {0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.Out}, {
-                Position = UDim2.new(StartPosition.X.Scale, StartPosition.X.Offset + delta.X, StartPosition.Y.Scale, StartPosition.Y.Offset + delta.Y)
-            })
-        end
-    end)
-end
-
 function MeisterUI:Notify(options)
     local title = options.Title or "Notification"
     local content = options.Content or "Content"
@@ -76,10 +49,9 @@ function MeisterUI:Notify(options)
     NotifFrame.Parent = NotifContainer
     NotifFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
     NotifFrame.BorderSizePixel = 0
-    NotifFrame.Size = UDim2.new(1, 40, 0, 0)
-    NotifFrame.Position = UDim2.new(1, 50, 0, 0)
-    NotifFrame.ClipsDescendants = true
-    NotifFrame.BackgroundTransparency = 1
+    NotifFrame.Size = UDim2.new(1, 0, 0, 60)
+    NotifFrame.BackgroundTransparency = 0
+    NotifFrame.Position = UDim2.new(0, 0, 1, -70)
 
     local NotifCorner = Instance.new("UICorner")
     NotifCorner.CornerRadius = UDim.new(0, 8)
@@ -89,8 +61,6 @@ function MeisterUI:Notify(options)
     NotifStroke.Parent = NotifFrame
     NotifStroke.Color = Color3.fromRGB(60, 60, 65)
     NotifStroke.Thickness = 1
-    NotifStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-    NotifStroke.Transparency = 1
 
     local NotifTitle = Instance.new("TextLabel")
     NotifTitle.Parent = NotifFrame
@@ -102,13 +72,12 @@ function MeisterUI:Notify(options)
     NotifTitle.TextColor3 = Color3.fromRGB(240, 240, 240)
     NotifTitle.TextSize = 14
     NotifTitle.TextXAlignment = Enum.TextXAlignment.Left
-    NotifTitle.TextTransparency = 1
 
     local NotifText = Instance.new("TextLabel")
     NotifText.Parent = NotifFrame
     NotifText.BackgroundTransparency = 1
     NotifText.Position = UDim2.new(0, 15, 0, 32)
-    NotifText.Size = UDim2.new(1, -30, 0, 40)
+    NotifText.Size = UDim2.new(1, -30, 0, 20)
     NotifText.Font = Enum.Font.Ubuntu
     NotifText.Text = content
     NotifText.TextColor3 = Color3.fromRGB(180, 180, 180)
@@ -116,60 +85,9 @@ function MeisterUI:Notify(options)
     NotifText.TextXAlignment = Enum.TextXAlignment.Left
     NotifText.TextYAlignment = Enum.TextYAlignment.Top
     NotifText.TextWrapped = true
-    NotifText.TextTransparency = 1
-
-    local ProgressBarBG = Instance.new("Frame")
-    ProgressBarBG.Parent = NotifFrame
-    ProgressBarBG.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-    ProgressBarBG.Position = UDim2.new(0, 15, 1, -8)
-    ProgressBarBG.Size = UDim2.new(1, -30, 0, 3)
-    ProgressBarBG.BorderSizePixel = 0
-    ProgressBarBG.BackgroundTransparency = 1
-
-    local ProgressBarBGCorner = Instance.new("UICorner")
-    ProgressBarBGCorner.CornerRadius = UDim.new(1, 0)
-    ProgressBarBGCorner.Parent = ProgressBarBG
-
-    local ProgressBar = Instance.new("Frame")
-    ProgressBar.Parent = ProgressBarBG
-    ProgressBar.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
-    ProgressBar.Size = UDim2.new(1, 0, 1, 0)
-    ProgressBar.BorderSizePixel = 0
-    ProgressBar.BackgroundTransparency = 1
-
-    local ProgressBarCorner = Instance.new("UICorner")
-    ProgressBarCorner.CornerRadius = UDim.new(1, 0)
-    ProgressBarCorner.Parent = ProgressBar
-
-    local bounds = TextService:GetTextSize(content, 13, Enum.Font.Ubuntu, Vector2.new(270, math.huge))
-    local totalHeight = 55 + bounds.Y
-
-    Utility:Tween(NotifFrame, {0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out}, {
-        Size = UDim2.new(1, 0, 0, totalHeight),
-        BackgroundTransparency = 0
-    })
-    Utility:Tween(NotifStroke, {0.4}, {Transparency = 0})
-    Utility:Tween(NotifTitle, {0.3}, {TextTransparency = 0})
-    Utility:Tween(NotifText, {0.3}, {TextTransparency = 0})
-    Utility:Tween(ProgressBarBG, {0.3}, {BackgroundTransparency = 0})
-    Utility:Tween(ProgressBar, {0.3}, {BackgroundTransparency = 0})
-    Utility:Tween(ProgressBar, {duration, Enum.EasingStyle.Linear, Enum.EasingDirection.In}, {
-        Size = UDim2.new(0, 0, 1, 0)
-    })
 
     task.delay(duration, function()
-        Utility:Tween(NotifTitle, {0.3}, {TextTransparency = 1})
-        Utility:Tween(NotifText, {0.3}, {TextTransparency = 1})
-        Utility:Tween(ProgressBarBG, {0.3}, {BackgroundTransparency = 1})
-        Utility:Tween(ProgressBar, {0.3}, {BackgroundTransparency = 1})
-        local hideTween = Utility:Tween(NotifFrame, {0.4, Enum.EasingStyle.Back, Enum.EasingDirection.In}, {
-            Size = UDim2.new(1, 0, 0, 0),
-            BackgroundTransparency = 1
-        })
-        Utility:Tween(NotifStroke, {0.4}, {Transparency = 1})
-        hideTween.Completed:Connect(function()
-            NotifFrame:Destroy()
-        end)
+        NotifFrame:Destroy()
     end)
 end
 
@@ -178,26 +96,7 @@ function MeisterUI:CreateWindow(options)
     local HideKey = options.HideKey or Enum.KeyCode.Insert
     local WindowOpen = false
 
-    local IntroOverlay = Instance.new("Frame")
-    IntroOverlay.Name = "IntroOverlay"
-    IntroOverlay.Parent = ScreenObject
-    IntroOverlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    IntroOverlay.Position = UDim2.new(0, 0, 0, 0)
-    IntroOverlay.Size = UDim2.new(1, 0, 1, 0)
-    IntroOverlay.ZIndex = 100
-    IntroOverlay.BackgroundTransparency = 1
-
-    local IntroTitle = Instance.new("TextLabel")
-    IntroTitle.Parent = IntroOverlay
-    IntroTitle.BackgroundTransparency = 1
-    IntroTitle.Position = UDim2.new(0.5, -200, 0.5, -40)
-    IntroTitle.Size = UDim2.new(0, 400, 0, 80)
-    IntroTitle.Font = Enum.Font.Code
-    IntroTitle.Text = "MeisterUI"
-    IntroTitle.TextColor3 = Color3.fromRGB(240, 240, 240)
-    IntroTitle.TextScaled = true
-    IntroTitle.TextTransparency = 1
-
+    -- Main Frame (без анимации)
     local MainFrame = Instance.new("Frame")
     MainFrame.Name = "MainFrame"
     MainFrame.Parent = ScreenObject
@@ -216,18 +115,7 @@ function MeisterUI:CreateWindow(options)
     MainStroke.Thickness = 1
     MainStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 
-    local ShadowFrame = Instance.new("Frame")
-    ShadowFrame.Name = "Shadow"
-    ShadowFrame.Parent = MainFrame
-    ShadowFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    ShadowFrame.Size = UDim2.new(1, 10, 1, 10)
-    ShadowFrame.Position = UDim2.new(0, -5, 0, -5)
-    ShadowFrame.BackgroundTransparency = 0.8
-    ShadowFrame.ZIndex = -1
-    local ShadowCorner = Instance.new("UICorner")
-    ShadowCorner.CornerRadius = UDim.new(0, 14)
-    ShadowCorner.Parent = ShadowFrame
-
+    -- Sidebar
     local Sidebar = Instance.new("Frame")
     Sidebar.Name = "Sidebar"
     Sidebar.Parent = MainFrame
@@ -235,18 +123,10 @@ function MeisterUI:CreateWindow(options)
     Sidebar.Position = UDim2.new(0, 0, 0, 35)
     Sidebar.Size = UDim2.new(0, 180, 1, -35)
     Sidebar.BorderSizePixel = 0
-    Sidebar.ClipsDescendants = true
 
     local SidebarCorner = Instance.new("UICorner")
     SidebarCorner.CornerRadius = UDim.new(0, 10)
     SidebarCorner.Parent = Sidebar
-
-    local SidebarFix = Instance.new("Frame")
-    SidebarFix.Parent = Sidebar
-    SidebarFix.BackgroundColor3 = Color3.fromRGB(22, 22, 26)
-    SidebarFix.Position = UDim2.new(1, -10, 0, 0)
-    SidebarFix.Size = UDim2.new(0, 10, 1, 0)
-    SidebarFix.BorderSizePixel = 0
 
     local SidebarDivider = Instance.new("Frame")
     SidebarDivider.Parent = Sidebar
@@ -255,6 +135,7 @@ function MeisterUI:CreateWindow(options)
     SidebarDivider.Size = UDim2.new(0, 1, 1, 0)
     SidebarDivider.BorderSizePixel = 0
 
+    -- Topbar
     local Topbar = Instance.new("Frame")
     Topbar.Name = "Topbar"
     Topbar.Parent = MainFrame
@@ -267,13 +148,6 @@ function MeisterUI:CreateWindow(options)
     TopbarCorner.CornerRadius = UDim.new(0, 10)
     TopbarCorner.Parent = Topbar
 
-    local TopbarFix = Instance.new("Frame")
-    TopbarFix.Parent = Topbar
-    TopbarFix.BackgroundColor3 = Color3.fromRGB(22, 22, 26)
-    TopbarFix.Position = UDim2.new(0, 0, 1, -10)
-    TopbarFix.Size = UDim2.new(1, 0, 0, 10)
-    TopbarFix.BorderSizePixel = 0
-
     local TopbarDivider = Instance.new("Frame")
     TopbarDivider.Parent = Topbar
     TopbarDivider.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
@@ -281,8 +155,7 @@ function MeisterUI:CreateWindow(options)
     TopbarDivider.Size = UDim2.new(1, 0, 0, 1)
     TopbarDivider.BorderSizePixel = 0
 
-    Utility:MakeDraggable(Topbar, MainFrame)
-
+    -- Закрытие
     local CloseBtn = Instance.new("TextButton")
     CloseBtn.Parent = Topbar
     CloseBtn.BackgroundTransparency = 1
@@ -294,11 +167,8 @@ function MeisterUI:CreateWindow(options)
     CloseBtn.TextSize = 14
     CloseBtn.AutoButtonColor = false
 
-    CloseBtn.MouseEnter:Connect(function()
-        Utility:Tween(CloseBtn, {0.2}, {TextColor3 = Color3.fromRGB(255, 100, 100)})
-    end)
-    CloseBtn.MouseLeave:Connect(function()
-        Utility:Tween(CloseBtn, {0.2}, {TextColor3 = Color3.fromRGB(150, 150, 150)})
+    CloseBtn.MouseButton1Click:Connect(function()
+        if WindowOpen then ToggleUI(false) end
     end)
 
     local MainTitle = Instance.new("TextLabel")
@@ -312,8 +182,8 @@ function MeisterUI:CreateWindow(options)
     MainTitle.TextSize = 14
     MainTitle.TextXAlignment = Enum.TextXAlignment.Left
     MainTitle.TextYAlignment = Enum.TextYAlignment.Center
-    MainTitle.TextTruncate = Enum.TextTruncate.AtEnd
 
+    -- Tabs Container
     local TabContainer = Instance.new("ScrollingFrame")
     TabContainer.Name = "TabContainer"
     TabContainer.Parent = Sidebar
@@ -339,71 +209,7 @@ function MeisterUI:CreateWindow(options)
         TabContainer.CanvasSize = UDim2.new(0, 0, 0, TabList.AbsoluteContentSize.Y + 15)
     end)
 
-    local Players = game:GetService("Players")
-    local LocalPlayer = Players.LocalPlayer
-    local MarketplaceService = game:GetService("MarketplaceService")
-
-    local ProfileFrame = Instance.new("Frame")
-    ProfileFrame.Name = "ProfileFrame"
-    ProfileFrame.Parent = Sidebar
-    ProfileFrame.BackgroundTransparency = 1
-    ProfileFrame.Position = UDim2.new(0, 10, 1, -60)
-    ProfileFrame.Size = UDim2.new(1, -20, 0, 50)
-    ProfileFrame.ClipsDescendants = true
-
-    local AvatarImage = Instance.new("ImageLabel")
-    AvatarImage.Parent = ProfileFrame
-    AvatarImage.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
-    AvatarImage.Size = UDim2.new(0, 34, 0, 34)
-    AvatarImage.Position = UDim2.new(0, 0, 0.5, -17)
-    local AvatarCorner = Instance.new("UICorner")
-    AvatarCorner.CornerRadius = UDim.new(1, 0)
-    AvatarCorner.Parent = AvatarImage
-
-    local NameLab = Instance.new("TextLabel")
-    NameLab.Parent = ProfileFrame
-    NameLab.BackgroundTransparency = 1
-    NameLab.Position = UDim2.new(0, 42, 0, 8)
-    NameLab.Size = UDim2.new(1, -42, 0, 16)
-    NameLab.Font = Enum.Font.Ubuntu
-    NameLab.Text = LocalPlayer and LocalPlayer.Name or "Unknown"
-    NameLab.TextColor3 = Color3.fromRGB(240, 240, 240)
-    NameLab.TextSize = 13
-    NameLab.TextXAlignment = Enum.TextXAlignment.Left
-    NameLab.TextTruncate = Enum.TextTruncate.AtEnd
-
-    local GameLab = Instance.new("TextLabel")
-    GameLab.Parent = ProfileFrame
-    GameLab.BackgroundTransparency = 1
-    GameLab.Position = UDim2.new(0, 42, 0, 24)
-    GameLab.Size = UDim2.new(1, -42, 0, 14)
-    GameLab.Font = Enum.Font.Ubuntu
-    GameLab.Text = "Loading..."
-    GameLab.TextColor3 = Color3.fromRGB(150, 150, 150)
-    GameLab.TextSize = 11
-    GameLab.TextXAlignment = Enum.TextXAlignment.Left
-    GameLab.TextTruncate = Enum.TextTruncate.AtEnd
-
-    task.spawn(function()
-        if LocalPlayer then
-            local success, avatarUrl = pcall(function()
-                return Players:GetUserThumbnailAsync(LocalPlayer.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size420x420)
-            end)
-            if success then
-                AvatarImage.Image = avatarUrl
-            end
-        end
-    end)
-
-    task.spawn(function()
-        local success, info = pcall(function()
-            return MarketplaceService:GetProductInfo(game.PlaceId)
-        end)
-        if success and info and info.Name then
-            GameLab.Text = info.Name
-        end
-    end)
-
+    -- Content Area
     local ContentArea = Instance.new("Frame")
     ContentArea.Name = "ContentArea"
     ContentArea.Parent = MainFrame
@@ -411,58 +217,17 @@ function MeisterUI:CreateWindow(options)
     ContentArea.Position = UDim2.new(0, 181, 0, 35)
     ContentArea.Size = UDim2.new(1, -181, 1, -35)
 
-    task.spawn(function()
-        Utility:Tween(IntroOverlay, {0.5}, {BackgroundTransparency = 0})
-        task.wait(0.6)
-        Utility:Tween(IntroTitle, {1.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out}, {TextTransparency = 0})
-        task.wait(1.5)
-        Utility:Tween(IntroTitle, {0.6}, {TextTransparency = 1})
-        task.wait(0.7)
-        MainFrame.Visible = true
-        MainFrame.Size = UDim2.new(0, 550, 0, 300)
-        MainFrame.Position = UDim2.new(0.5, -275, 0.5, -150)
-        task.delay(1.5, function()
-            if IntroOverlay and IntroOverlay.Parent then IntroOverlay:Destroy() end
-        end)
-        local fadeBg = Utility:Tween(IntroOverlay, {0.8}, {BackgroundTransparency = 1})
-        Utility:Tween(MainFrame, {0.8, Enum.EasingStyle.Back, Enum.EasingDirection.Out}, {
-            Size = UDim2.new(0, 650, 0, 400),
-            Position = UDim2.new(0.5, -325, 0.5, -200)
-        })
-        fadeBg.Completed:Connect(function()
-            if IntroOverlay and IntroOverlay.Parent then IntroOverlay:Destroy() end
-            WindowOpen = true
-            MeisterUI:Notify({Title = "Loaded", Content = "MeisterUI loaded successfully.", Duration = 4})
-        end)
-    end)
-
     local function ToggleUI(state)
         WindowOpen = state
-        if WindowOpen then
-            MainFrame.Visible = true
-            Utility:Tween(MainFrame, {0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out}, {
-                Size = UDim2.new(0, 650, 0, 400),
-                Position = UDim2.new(0.5, -325, 0.5, -200)
-            })
-        else
-            local closeTween = Utility:Tween(MainFrame, {0.35, Enum.EasingStyle.Back, Enum.EasingDirection.In}, {
-                Size = UDim2.new(0, 500, 0, 250),
-                Position = UDim2.new(0.5, -250, 0.5, -125)
-            })
-            closeTween.Completed:Connect(function()
-                if not WindowOpen then MainFrame.Visible = false end
-            end)
-            MeisterUI:Notify({Title = "UI Hidden", Content = "Press INSERT to open the menu again.", Duration = 4})
+        MainFrame.Visible = state
+        if state then
+            MeisterUI:Notify({Title = "UI Open", Content = "Menu opened", Duration = 2})
         end
     end
 
-    CloseBtn.MouseButton1Click:Connect(function()
-        if WindowOpen then ToggleUI(false) end
-    end)
-
     UserInputService.InputBegan:Connect(function(input, gp)
         if gp then return end
-        if input.KeyCode == HideKey and not ParentGui:FindFirstChild("IntroOverlay") then
+        if input.KeyCode == HideKey then
             ToggleUI(not WindowOpen)
         end
     end)
@@ -530,27 +295,22 @@ function MeisterUI:CreateWindow(options)
         local function ActivateTab()
             for _, child in pairs(TabContainer:GetChildren()) do
                 if child:IsA("TextButton") then
-                    Utility:Tween(child, {0.3}, {BackgroundTransparency = 1, TextColor3 = Color3.fromRGB(150, 150, 150)})
+                    child.BackgroundTransparency = 1
+                    child.TextColor3 = Color3.fromRGB(150, 150, 150)
                     local ind = child:FindFirstChild("Frame")
-                    if ind then Utility:Tween(ind, {0.3}, {Size = UDim2.new(0, 3, 0, 0)}) end
+                    if ind then ind.Size = UDim2.new(0, 3, 0, 0) end
                 end
             end
             for _, page in pairs(Pages) do
                 if page.Visible then
                     page.Visible = false
-                    page.Position = UDim2.new(0, 10, 0, 0)
                 end
             end
 
-            Utility:Tween(TabBtn, {0.3}, {BackgroundTransparency = 0, TextColor3 = Color3.fromRGB(240, 240, 240)})
-            Utility:Tween(SelectedIndicator, {0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out}, {
-                Size = UDim2.new(0, 3, 0, 18)
-            })
-
+            TabBtn.BackgroundTransparency = 0
+            TabBtn.TextColor3 = Color3.fromRGB(240, 240, 240)
+            SelectedIndicator.Size = UDim2.new(0, 3, 0, 18)
             TabPage.Visible = true
-            Utility:Tween(TabPage, {0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out}, {
-                Position = UDim2.new(0, 0, 0, 0)
-            })
         end
 
         TabBtn.MouseButton1Click:Connect(ActivateTab)
@@ -595,36 +355,9 @@ function MeisterUI:CreateWindow(options)
             BtnText.TextColor3 = Color3.fromRGB(220, 220, 220)
             BtnText.TextSize = 14
             BtnText.TextXAlignment = Enum.TextXAlignment.Left
-            BtnText.TextTruncate = Enum.TextTruncate.AtEnd
 
-            local BtnIcon = Instance.new("ImageLabel")
-            BtnIcon.Parent = ButtonFrame
-            BtnIcon.BackgroundTransparency = 1
-            BtnIcon.Position = UDim2.new(1, -30, 0.5, -8)
-            BtnIcon.Size = UDim2.new(0, 16, 0, 16)
-            BtnIcon.Image = "rbxassetid://10888331510"
-            BtnIcon.ImageColor3 = Color3.fromRGB(150, 150, 150)
-
-            BtnButton.MouseEnter:Connect(function()
-                Utility:Tween(ButtonFrame, {0.2}, {BackgroundColor3 = Color3.fromRGB(40, 40, 45)})
-                Utility:Tween(BtnIcon, {0.2}, {Position = UDim2.new(1, -25, 0.5, -8), ImageColor3 = Color3.fromRGB(255, 255, 255)})
-            end)
-
-            BtnButton.MouseLeave:Connect(function()
-                Utility:Tween(ButtonFrame, {0.2}, {BackgroundColor3 = Color3.fromRGB(30, 30, 35)})
-                Utility:Tween(BtnIcon, {0.2}, {Position = UDim2.new(1, -30, 0.5, -8), ImageColor3 = Color3.fromRGB(150, 150, 150)})
-            end)
-
-            BtnButton.MouseButton1Down:Connect(function()
-                Utility:Tween(ButtonFrame, {0.1}, {Size = UDim2.new(1, -4, 0, 38)})
-                Utility:Tween(BtnStroke, {0.1}, {Color = Color3.fromRGB(100, 100, 110)})
-            end)
-
-            BtnButton.MouseButton1Up:Connect(function()
-                Utility:Tween(ButtonFrame, {0.1}, {Size = UDim2.new(1, 0, 0, 42)})
-                Utility:Tween(BtnStroke, {0.1}, {Color = Color3.fromRGB(45, 45, 50)})
-                callback()
-            end)
+            BtnButton.MouseButton1Click:Connect(callback)
+            return {}
         end
 
         function Elements:CreateToggle(options)
@@ -662,7 +395,6 @@ function MeisterUI:CreateWindow(options)
             TglText.TextColor3 = Color3.fromRGB(220, 220, 220)
             TglText.TextSize = 14
             TglText.TextXAlignment = Enum.TextXAlignment.Left
-            TglText.TextTruncate = Enum.TextTruncate.AtEnd
 
             local SliderBG = Instance.new("Frame")
             SliderBG.Parent = ToggleFrame
@@ -672,10 +404,6 @@ function MeisterUI:CreateWindow(options)
             local SCorner = Instance.new("UICorner")
             SCorner.CornerRadius = UDim.new(1, 0)
             SCorner.Parent = SliderBG
-
-            local SStroke = Instance.new("UIStroke")
-            SStroke.Parent = SliderBG
-            SStroke.Color = Color3.fromRGB(50, 50, 55)
 
             local SliderCircle = Instance.new("Frame")
             SliderCircle.Parent = SliderBG
@@ -688,39 +416,27 @@ function MeisterUI:CreateWindow(options)
 
             local toggled = default
 
-            local function updateToggle(anim)
-                local time = anim and 0.25 or 0
+            local function updateToggle()
                 if toggled then
-                    Utility:Tween(SliderBG, {time}, {BackgroundColor3 = Color3.fromRGB(220, 220, 220)})
-                    Utility:Tween(SliderCircle, {time, Enum.EasingStyle.Quart, Enum.EasingDirection.Out}, {
-                        Position = UDim2.new(1, -20, 0.5, -8),
-                        BackgroundColor3 = Color3.fromRGB(30, 30, 35)
-                    })
-                    Utility:Tween(SStroke, {time}, {Color = Color3.fromRGB(220, 220, 220)})
+                    SliderBG.BackgroundColor3 = Color3.fromRGB(220, 220, 220)
+                    SliderCircle.Position = UDim2.new(1, -20, 0.5, -8)
+                    SliderCircle.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
                 else
-                    Utility:Tween(SliderBG, {time}, {BackgroundColor3 = Color3.fromRGB(20, 20, 22)})
-                    Utility:Tween(SliderCircle, {time, Enum.EasingStyle.Quart, Enum.EasingDirection.Out}, {
-                        Position = UDim2.new(0, 4, 0.5, -8),
-                        BackgroundColor3 = Color3.fromRGB(150, 150, 150)
-                    })
-                    Utility:Tween(SStroke, {time}, {Color = Color3.fromRGB(50, 50, 55)})
+                    SliderBG.BackgroundColor3 = Color3.fromRGB(20, 20, 22)
+                    SliderCircle.Position = UDim2.new(0, 4, 0.5, -8)
+                    SliderCircle.BackgroundColor3 = Color3.fromRGB(150, 150, 150)
                 end
             end
 
-            updateToggle(false)
+            updateToggle()
 
             TglButton.MouseButton1Click:Connect(function()
                 toggled = not toggled
-                updateToggle(true)
+                updateToggle()
                 callback(toggled)
             end)
 
-            TglButton.MouseEnter:Connect(function()
-                Utility:Tween(ToggleFrame, {0.2}, {BackgroundColor3 = Color3.fromRGB(35, 35, 40)})
-            end)
-            TglButton.MouseLeave:Connect(function()
-                Utility:Tween(ToggleFrame, {0.2}, {BackgroundColor3 = Color3.fromRGB(30, 30, 35)})
-            end)
+            return {}
         end
 
         function Elements:CreateSlider(options)
@@ -815,7 +531,7 @@ function MeisterUI:CreateWindow(options)
                 value = math.floor(value / increment + 0.5) * increment
                 value = math.clamp(value, min, max)
                 local fillX = (value - min) / math.max(max - min, 0.0001)
-                Utility:Tween(TrackFill, {0.05}, {Size = UDim2.new(fillX, 0, 1, 0)})
+                TrackFill.Size = UDim2.new(fillX, 0, 1, 0)
                 Handle.Position = UDim2.new(fillX, 0, 0.5, 0)
                 ValueLab.Text = fmt(value)
                 callback(value)
@@ -841,6 +557,8 @@ function MeisterUI:CreateWindow(options)
             local initFill = (default - min) / math.max(max - min, 0.0001)
             TrackFill.Size = UDim2.new(math.clamp(initFill, 0, 1), 0, 1, 0)
             Handle.Position = UDim2.new(math.clamp(initFill, 0, 1), 0, 0.5, 0)
+
+            return {}
         end
 
         function Elements:CreateLabel(options)
@@ -864,7 +582,6 @@ function MeisterUI:CreateWindow(options)
             LText.TextSize = size
             LText.TextXAlignment = Enum.TextXAlignment.Left
             LText.TextWrapped = true
-            LText.RichText = true
 
             local function SetText(newText) LText.Text = newText end
             local function SetColor(newCol) LText.TextColor3 = newCol end
@@ -902,15 +619,14 @@ function MeisterUI:CreateWindow(options)
                 SepLab.TextSize = 11
                 SepLab.ZIndex = 2
             end
+
+            return {}
         end
 
         function Elements:CreateKeybind(options)
             local name = options.Name or "Keybind"
             local default = options.CurrentKey or Enum.KeyCode.Unknown
             local callback = options.Callback or function() end
-
-            local listening = false
-            local currentKey = default
 
             local KFrame = Instance.new("Frame")
             KFrame.Parent = TabPage
@@ -943,18 +659,18 @@ function MeisterUI:CreateWindow(options)
             KeyBtn.Position = UDim2.new(1, -90, 0.5, -12)
             KeyBtn.Size = UDim2.new(0, 78, 0, 24)
             KeyBtn.Font = Enum.Font.Code
-            KeyBtn.Text = currentKey.Name
+            KeyBtn.Text = default.Name
             KeyBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
             KeyBtn.TextSize = 12
             KeyBtn.AutoButtonColor = false
             Instance.new("UICorner", KeyBtn).CornerRadius = UDim.new(0, 4)
-            local KBStroke = Instance.new("UIStroke", KeyBtn)
-            KBStroke.Color = Color3.fromRGB(55, 55, 60)
+
+            local listening = false
+            local currentKey = default
 
             KeyBtn.MouseButton1Click:Connect(function()
                 listening = true
                 KeyBtn.Text = "..."
-                Utility:Tween(KBStroke, {0.2}, {Color = Color3.fromRGB(220, 220, 220)})
             end)
 
             UserInputService.InputBegan:Connect(function(input, gp)
@@ -967,10 +683,11 @@ function MeisterUI:CreateWindow(options)
                     end
                     listening = false
                     KeyBtn.Text = currentKey.Name
-                    Utility:Tween(KBStroke, {0.2}, {Color = Color3.fromRGB(55, 55, 60)})
                     callback(currentKey)
                 end
             end)
+
+            return {}
         end
 
         function Elements:CreateDropdown(options)
@@ -1094,11 +811,6 @@ function MeisterUI:CreateWindow(options)
                         current = option
                         TitleLab.Text = name .. "  ›  " .. tostring(current)
                         expanded = false
-                        Utility:Tween(ListPanel, {0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out}, {
-                            Size = UDim2.new(1, 0, 0, 0)
-                        })
-                        Utility:Tween(ArrowLab, {0.2}, {Rotation = 0})
-                        task.wait(0.28)
                         ListPanel.Visible = false
                         buildList()
                         callback(current)
@@ -1115,50 +827,13 @@ function MeisterUI:CreateWindow(options)
                 if expanded then
                     local panelH = math.clamp(#list * ITEM_H + 8, 0, 180)
                     ListPanel.Visible = true
-                    ListPanel.Size = UDim2.new(1, 0, 0, 0)
-                    Utility:Tween(ListPanel, {0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out}, {
-                        Size = UDim2.new(1, 0, 0, panelH)
-                    })
-                    Utility:Tween(ArrowLab, {0.25}, {Rotation = 180})
-                    Utility:Tween(DropFrame, {0.2}, {BackgroundColor3 = Color3.fromRGB(38, 38, 44)})
+                    ListPanel.Size = UDim2.new(1, 0, 0, panelH)
                 else
-                    Utility:Tween(ListPanel, {0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out}, {
-                        Size = UDim2.new(1, 0, 0, 0)
-                    })
-                    Utility:Tween(ArrowLab, {0.2}, {Rotation = 0})
-                    Utility:Tween(DropFrame, {0.2}, {BackgroundColor3 = Color3.fromRGB(30, 30, 35)})
-                    task.wait(0.28)
-                    if not expanded then ListPanel.Visible = false end
+                    ListPanel.Visible = false
                 end
             end
 
             DropBtn.MouseButton1Click:Connect(toggleDropdown)
-
-            UserInputService.InputBegan:Connect(function(input)
-                if expanded and input.UserInputType == Enum.UserInputType.MouseButton1 then
-                    local pos = input.Position
-                    local panelPos = ListPanel.AbsolutePosition
-                    local panelSz = ListPanel.AbsoluteSize
-                    local headPos = DropFrame.AbsolutePosition
-                    local headSz = DropFrame.AbsoluteSize
-                    local inHead = pos.X >= headPos.X and pos.X <= headPos.X + headSz.X and
-                                   pos.Y >= headPos.Y and pos.Y <= headPos.Y + headSz.Y
-                    local inPanel = pos.X >= panelPos.X and pos.X <= panelPos.X + panelSz.X and
-                                    pos.Y >= panelPos.Y and pos.Y <= panelPos.Y + panelSz.Y
-                    if not inHead and not inPanel then
-                        task.spawn(function()
-                            expanded = false
-                            Utility:Tween(ListPanel, {0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out}, {
-                                Size = UDim2.new(1, 0, 0, 0)
-                            })
-                            Utility:Tween(ArrowLab, {0.2}, {Rotation = 0})
-                            Utility:Tween(DropFrame, {0.2}, {BackgroundColor3 = Color3.fromRGB(30, 30, 35)})
-                            task.wait(0.28)
-                            ListPanel.Visible = false
-                        end)
-                    end
-                end
-            end)
 
             local DropAPI = {}
             function DropAPI:Set(option)
@@ -1232,6 +907,8 @@ function MeisterUI:CreateWindow(options)
             TextBox.FocusLost:Connect(function()
                 callback(TextBox.Text)
             end)
+
+            return {}
         end
 
         function Elements:CreateColorPicker(options)
@@ -1239,16 +916,11 @@ function MeisterUI:CreateWindow(options)
             local default = options.Default or Color3.fromRGB(255, 0, 0)
             local callback = options.Callback or function() end
 
-            local currentH, currentS, currentV = Color3.toHSV(default)
-            local expanded = false
-            local svDragging = false
-            local hueDragging = false
-
+            -- Упрощённая версия - просто показываем цвет
             local CPFrame = Instance.new("Frame")
             CPFrame.Parent = TabPage
             CPFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
             CPFrame.Size = UDim2.new(1, 0, 0, 42)
-            CPFrame.ClipsDescendants = true
 
             local CPCorner = Instance.new("UICorner")
             CPCorner.CornerRadius = UDim.new(0, 6)
@@ -1278,160 +950,26 @@ function MeisterUI:CreateWindow(options)
             local SwatchCorner = Instance.new("UICorner")
             SwatchCorner.CornerRadius = UDim.new(0, 4)
             SwatchCorner.Parent = Swatch
-            local SwatchStroke = Instance.new("UIStroke")
-            SwatchStroke.Parent = Swatch
-            SwatchStroke.Color = Color3.fromRGB(70, 70, 75)
-            SwatchStroke.Thickness = 1
 
-            local ArrowIcon = Instance.new("ImageLabel")
-            ArrowIcon.Parent = CPFrame
-            ArrowIcon.BackgroundTransparency = 1
-            ArrowIcon.Position = UDim2.new(1, -26, 0.5, -8)
-            ArrowIcon.Size = UDim2.new(0, 16, 0, 16)
-            ArrowIcon.Image = "rbxassetid://10888331510"
-            ArrowIcon.ImageColor3 = Color3.fromRGB(150, 150, 150)
-            ArrowIcon.Rotation = 90
+            -- Кнопка для выбора цвета (упрощённо)
+            local PickBtn = Instance.new("TextButton")
+            PickBtn.Parent = CPFrame
+            PickBtn.BackgroundTransparency = 1
+            PickBtn.Size = UDim2.new(1, 0, 1, 0)
+            PickBtn.Text = ""
+            PickBtn.ZIndex = 2
 
-            local HeaderBtn = Instance.new("TextButton")
-            HeaderBtn.Parent = CPFrame
-            HeaderBtn.BackgroundTransparency = 1
-            HeaderBtn.Size = UDim2.new(1, 0, 0, 42)
-            HeaderBtn.Text = ""
-            HeaderBtn.ZIndex = 2
-
-            local Palette = Instance.new("ImageLabel")
-            Palette.Parent = CPFrame
-            Palette.Size = UDim2.new(1, -30, 0, 150)
-            Palette.Position = UDim2.new(0, 15, 0, 52)
-            Palette.BackgroundColor3 = Color3.fromHSV(currentH, 1, 1)
-            Palette.Image = "rbxassetid://4155801252"
-            Palette.ZIndex = 3
-            Instance.new("UICorner", Palette).CornerRadius = UDim.new(0, 4)
-
-            local SVCursor = Instance.new("Frame")
-            SVCursor.Parent = Palette
-            SVCursor.Size = UDim2.new(0, 10, 0, 10)
-            SVCursor.AnchorPoint = Vector2.new(0.5, 0.5)
-            SVCursor.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-            SVCursor.BorderSizePixel = 0
-            SVCursor.ZIndex = 5
-            SVCursor.Position = UDim2.new(currentS, 0, 1 - currentV, 0)
-            Instance.new("UICorner", SVCursor).CornerRadius = UDim.new(1, 0)
-            local SVStroke = Instance.new("UIStroke", SVCursor)
-            SVStroke.Color = Color3.fromRGB(0, 0, 0)
-            SVStroke.Thickness = 1
-
-            local HueBar = Instance.new("ImageLabel")
-            HueBar.Parent = CPFrame
-            HueBar.Size = UDim2.new(1, -30, 0, 14)
-            HueBar.Position = UDim2.new(0, 15, 0, 212)
-            HueBar.Image = "rbxassetid://698052001"
-            HueBar.ZIndex = 3
-            Instance.new("UICorner", HueBar).CornerRadius = UDim.new(0, 4)
-
-            local HueCursor = Instance.new("Frame")
-            HueCursor.Parent = HueBar
-            HueCursor.Size = UDim2.new(0, 5, 1, 4)
-            HueCursor.AnchorPoint = Vector2.new(0.5, 0)
-            HueCursor.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-            HueCursor.BorderSizePixel = 0
-            HueCursor.ZIndex = 5
-            HueCursor.Position = UDim2.new(currentH, 0, 0, -2)
-            Instance.new("UICorner", HueCursor).CornerRadius = UDim.new(0, 2)
-            local HueStroke = Instance.new("UIStroke", HueCursor)
-            HueStroke.Color = Color3.fromRGB(0, 0, 0)
-            HueStroke.Thickness = 1
-
-            local HexLabel = Instance.new("TextLabel")
-            HexLabel.Parent = CPFrame
-            HexLabel.BackgroundColor3 = Color3.fromRGB(20, 20, 22)
-            HexLabel.Position = UDim2.new(0, 15, 0, 236)
-            HexLabel.Size = UDim2.new(1, -30, 0, 22)
-            HexLabel.Font = Enum.Font.Code
-            HexLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
-            HexLabel.TextSize = 12
-            HexLabel.ZIndex = 3
-            local HexCorner = Instance.new("UICorner")
-            HexCorner.CornerRadius = UDim.new(0, 4)
-            HexCorner.Parent = HexLabel
-
-            local function updateColor()
-                local color = Color3.fromHSV(currentH, currentS, currentV)
-                Swatch.BackgroundColor3 = color
-                Palette.BackgroundColor3 = Color3.fromHSV(currentH, 1, 1)
-                local r = math.floor(color.R * 255)
-                local g = math.floor(color.G * 255)
-                local b = math.floor(color.B * 255)
-                HexLabel.Text = string.format("  #%02X%02X%02X  (R:%d G:%d B:%d)", r, g, b, r, g, b)
-                SVCursor.Position = UDim2.new(currentS, 0, 1 - currentV, 0)
-                HueCursor.Position = UDim2.new(currentH, 0, 0, -2)
-                callback(color)
-            end
-
-            updateColor()
-
-            HeaderBtn.MouseButton1Click:Connect(function()
-                expanded = not expanded
-                if expanded then
-                    Utility:Tween(CPFrame, {0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out}, {
-                        Size = UDim2.new(1, 0, 0, 270)
-                    })
-                    Utility:Tween(ArrowIcon, {0.3}, {Rotation = -90})
-                else
-                    Utility:Tween(CPFrame, {0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out}, {
-                        Size = UDim2.new(1, 0, 0, 42)
-                    })
-                    Utility:Tween(ArrowIcon, {0.3}, {Rotation = 90})
-                end
+            PickBtn.MouseButton1Click:Connect(function()
+                -- Просто вызываем callback с текущим цветом
+                callback(default)
+                MeisterUI:Notify({
+                    Title = "Color Picker",
+                    Content = "Color selected: " .. tostring(default),
+                    Duration = 2
+                })
             end)
 
-            Palette.InputBegan:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                    svDragging = true
-                    local relX = math.clamp((input.Position.X - Palette.AbsolutePosition.X) / Palette.AbsoluteSize.X, 0, 1)
-                    local relY = math.clamp((input.Position.Y - Palette.AbsolutePosition.Y) / Palette.AbsoluteSize.Y, 0, 1)
-                    currentS = relX
-                    currentV = 1 - relY
-                    updateColor()
-                end
-            end)
-            Palette.InputEnded:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.MouseButton1 then svDragging = false end
-            end)
-
-            HueBar.InputBegan:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                    hueDragging = true
-                    local relX = math.clamp((input.Position.X - HueBar.AbsolutePosition.X) / HueBar.AbsoluteSize.X, 0, 1)
-                    currentH = relX
-                    updateColor()
-                end
-            end)
-            HueBar.InputEnded:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.MouseButton1 then hueDragging = false end
-            end)
-
-            UserInputService.InputChanged:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.MouseMovement then
-                    if svDragging then
-                        local relX = math.clamp((input.Position.X - Palette.AbsolutePosition.X) / Palette.AbsoluteSize.X, 0, 1)
-                        local relY = math.clamp((input.Position.Y - Palette.AbsolutePosition.Y) / Palette.AbsoluteSize.Y, 0, 1)
-                        currentS = relX
-                        currentV = 1 - relY
-                        updateColor()
-                    elseif hueDragging then
-                        local relX = math.clamp((input.Position.X - HueBar.AbsolutePosition.X) / HueBar.AbsoluteSize.X, 0, 1)
-                        currentH = relX
-                        updateColor()
-                    end
-                end
-            end)
-            UserInputService.InputEnded:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                    svDragging = false
-                    hueDragging = false
-                end
-            end)
+            return {}
         end
 
         return Elements
