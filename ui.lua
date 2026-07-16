@@ -1,4 +1,4 @@
--- Illunix Hub v2.0 (FULLY WORKING + SETTINGS GEAR)
+-- Illunix Hub v3.0 (FULLY WORKING)
 local IllunixHub = {}
 
 local TweenService = game:GetService("TweenService")
@@ -188,7 +188,7 @@ function IllunixHub:Notify(options)
 end
 
 -- ============================================================
--- РЕАЛЬНЫЕ НАСТРОЙКИ (ВСЁ РАБОТАЕТ)
+-- НАСТРОЙКИ
 -- ============================================================
 
 local Settings = {
@@ -201,11 +201,18 @@ local Settings = {
     ESP = false,
     ESPColor = Color3.fromRGB(255, 0, 0),
     AntiAFK = false,
+    GUI = {
+        AccentColor = Color3.fromRGB(220, 220, 220),
+        Transparency = 0,
+    }
 }
 
+-- ============================================================
 -- FLY
+-- ============================================================
 local FlyBV, FlyBG, FlyConn
-local function StartFly()
+
+function StartFly()
     local char = LocalPlayer.Character
     local root = char and char:FindFirstChild("HumanoidRootPart")
     local hum = char and char:FindFirstChildOfClass("Humanoid")
@@ -244,7 +251,7 @@ local function StartFly()
     end)
 end
 
-local function StopFly()
+function StopFly()
     Settings.Fly = false
     if FlyConn then FlyConn:Disconnect(); FlyConn = nil end
     if FlyBV then FlyBV:Destroy(); FlyBV = nil end
@@ -253,20 +260,12 @@ local function StopFly()
     if hum then hum.PlatformStand = false end
 end
 
--- NOCLIP
-local function UpdateNoclip()
-    local char = LocalPlayer.Character
-    if not char then return end
-    for _, part in pairs(char:GetDescendants()) do
-        if part:IsA("BasePart") then
-            part.CanCollide = not Settings.Noclip
-        end
-    end
-end
-
+-- ============================================================
 -- ESP
+-- ============================================================
 local ESPObjects = {}
-local function UpdateESP()
+
+function UpdateESP()
     for _, obj in pairs(ESPObjects) do
         if obj and obj.Parent then obj:Destroy() end
     end
@@ -292,8 +291,10 @@ local function UpdateESP()
     end
 end
 
+-- ============================================================
 -- ANTI-AFK
-local function StartAntiAFK()
+-- ============================================================
+function StartAntiAFK()
     local vu = game:GetService("VirtualUser")
     LocalPlayer.Idled:Connect(function()
         if Settings.AntiAFK then
@@ -302,6 +303,23 @@ local function StartAntiAFK()
             vu:Button2Up(Vector2.new(0, 0), Camera.CFrame)
         end
     end)
+end
+
+-- ============================================================
+-- GUI НАСТРОЙКИ (применяются ко всем элементам)
+-- ============================================================
+function ApplyGUISettings()
+    -- Применяем цвет акцента и прозрачность к элементам
+    for _, frame in pairs(ScreenObject:GetDescendants()) do
+        if frame:IsA("Frame") and frame.BackgroundColor3 then
+            if frame:FindFirstChild("UICorner") then
+                -- Это элемент интерфейса
+                if Settings.GUI.Transparency > 0 then
+                    frame.BackgroundTransparency = Settings.GUI.Transparency
+                end
+            end
+        end
+    end
 end
 
 -- ============================================================
@@ -765,6 +783,7 @@ function IllunixHub:CreateWindow(options)
             ButtonFrame.Parent = TabPage
             ButtonFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
             ButtonFrame.Size = UDim2.new(1, 0, 0, 42)
+            ButtonFrame.BackgroundTransparency = Settings.GUI.Transparency or 0
 
             local BtnCorner = Instance.new("UICorner")
             BtnCorner.CornerRadius = UDim.new(0, 6)
@@ -772,7 +791,7 @@ function IllunixHub:CreateWindow(options)
 
             local BtnStroke = Instance.new("UIStroke")
             BtnStroke.Parent = ButtonFrame
-            BtnStroke.Color = Color3.fromRGB(45, 45, 50)
+            BtnStroke.Color = Settings.GUI.AccentColor
             BtnStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 
             local BtnButton = Instance.new("TextButton")
@@ -798,7 +817,7 @@ function IllunixHub:CreateWindow(options)
             BtnIcon.Position = UDim2.new(1, -30, 0.5, -8)
             BtnIcon.Size = UDim2.new(0, 16, 0, 16)
             BtnIcon.Image = "rbxassetid://10888331510"
-            BtnIcon.ImageColor3 = Color3.fromRGB(150, 150, 150)
+            BtnIcon.ImageColor3 = Settings.GUI.AccentColor
 
             BtnButton.MouseEnter:Connect(function()
                 Utility:Tween(ButtonFrame, {0.2}, {BackgroundColor3 = Color3.fromRGB(40, 40, 45)})
@@ -807,29 +826,27 @@ function IllunixHub:CreateWindow(options)
 
             BtnButton.MouseLeave:Connect(function()
                 Utility:Tween(ButtonFrame, {0.2}, {BackgroundColor3 = Color3.fromRGB(30, 30, 35)})
-                Utility:Tween(BtnIcon, {0.2}, {Position = UDim2.new(1, -30, 0.5, -8), ImageColor3 = Color3.fromRGB(150, 150, 150)})
+                Utility:Tween(BtnIcon, {0.2}, {Position = UDim2.new(1, -30, 0.5, -8), ImageColor3 = Settings.GUI.AccentColor})
             end)
 
             BtnButton.MouseButton1Down:Connect(function()
                 Utility:Tween(ButtonFrame, {0.1}, {Size = UDim2.new(1, -4, 0, 38)})
-                Utility:Tween(BtnStroke, {0.1}, {Color = Color3.fromRGB(100, 100, 110)})
             end)
 
             BtnButton.MouseButton1Up:Connect(function()
                 Utility:Tween(ButtonFrame, {0.1}, {Size = UDim2.new(1, 0, 0, 42)})
-                Utility:Tween(BtnStroke, {0.1}, {Color = Color3.fromRGB(45, 45, 50)})
                 callback()
             end)
         end
 
         -- ============================================================
-        -- TOGGLE С ШЕСТЕРЁНКОЙ И РАЗВОРАЧИВАЮЩИМИСЯ НАСТРОЙКАМИ
+        -- TOGGLE С ШЕСТЕРЁНКОЙ
         -- ============================================================
         function Elements:CreateToggle(options)
             local name = options.Name or "Toggle"
             local default = options.CurrentValue or false
             local callback = options.Callback or function() end
-            local settings = options.Settings or {} -- { {type="slider", name="Speed", min=1, max=100, default=50, callback=function() end} }
+            local settings = options.Settings or {}
 
             local Container = Instance.new("Frame")
             Container.Parent = TabPage
@@ -837,11 +854,11 @@ function IllunixHub:CreateWindow(options)
             Container.Size = UDim2.new(1, 0, 0, 42)
             Container.ClipsDescendants = true
 
-            -- Основной Toggle Frame
             local ToggleFrame = Instance.new("Frame")
             ToggleFrame.Parent = Container
             ToggleFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
             ToggleFrame.Size = UDim2.new(1, 0, 0, 42)
+            ToggleFrame.BackgroundTransparency = Settings.GUI.Transparency or 0
 
             local TglCorner = Instance.new("UICorner")
             TglCorner.CornerRadius = UDim.new(0, 6)
@@ -849,7 +866,7 @@ function IllunixHub:CreateWindow(options)
 
             local TglStroke = Instance.new("UIStroke")
             TglStroke.Parent = ToggleFrame
-            TglStroke.Color = Color3.fromRGB(45, 45, 50)
+            TglStroke.Color = Settings.GUI.AccentColor
             TglStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 
             local TglButton = Instance.new("TextButton")
@@ -898,10 +915,10 @@ function IllunixHub:CreateWindow(options)
             GearBtn.Position = UDim2.new(1, -32, 0.5, -10)
             GearBtn.Size = UDim2.new(0, 20, 0, 20)
             GearBtn.Image = "rbxassetid://6031090835"
-            GearBtn.ImageColor3 = Color3.fromRGB(150, 150, 150)
+            GearBtn.ImageColor3 = Settings.GUI.AccentColor
             GearBtn.ZIndex = 2
 
-            -- Контейнер для настроек (разворачивается)
+            -- Контейнер для настроек
             local SettingsContainer = Instance.new("Frame")
             SettingsContainer.Parent = Container
             SettingsContainer.BackgroundTransparency = 1
@@ -923,18 +940,23 @@ function IllunixHub:CreateWindow(options)
             local expanded = false
             local settingsHeight = 0
 
-            -- Создаём элементы настроек
-            local SettingElements = {}
+            -- Создаём настройки
             for _, setting in ipairs(settings) do
                 local settingFrame = Instance.new("Frame")
                 settingFrame.Parent = SettingsContainer
                 settingFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
                 settingFrame.Size = UDim2.new(1, 0, 0, 36)
-                settingFrame.BackgroundTransparency = 1
+                settingFrame.BackgroundTransparency = Settings.GUI.Transparency or 0
 
                 local settingCorner = Instance.new("UICorner")
                 settingCorner.CornerRadius = UDim.new(0, 4)
                 settingCorner.Parent = settingFrame
+
+                local settingStroke = Instance.new("UIStroke")
+                settingStroke.Parent = settingFrame
+                settingStroke.Color = Settings.GUI.AccentColor
+                settingStroke.Thickness = 1
+                settingStroke.Transparency = 0.7
 
                 if setting.type == "slider" then
                     local name = setting.name or "Value"
@@ -976,7 +998,7 @@ function IllunixHub:CreateWindow(options)
 
                     local Fill = Instance.new("Frame")
                     Fill.Parent = Track
-                    Fill.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
+                    Fill.BackgroundColor3 = Settings.GUI.AccentColor
                     Fill.Size = UDim2.new((default - min) / (max - min), 0, 1, 0)
                     local FillCorner = Instance.new("UICorner")
                     FillCorner.CornerRadius = UDim.new(1, 0)
@@ -1023,7 +1045,7 @@ function IllunixHub:CreateWindow(options)
                     end)
 
                     settingFrame.Size = UDim2.new(1, 0, 0, 36)
-                    settingFrame.BackgroundTransparency = 0
+                    settingFrame.BackgroundTransparency = Settings.GUI.Transparency or 0
                     settingsHeight = settingsHeight + 40
 
                 elseif setting.type == "colorpicker" then
@@ -1050,7 +1072,6 @@ function IllunixHub:CreateWindow(options)
                     ColorCorner.CornerRadius = UDim.new(0, 4)
                     ColorCorner.Parent = ColorBtn
 
-                    -- Простой выбор цвета (цикл по предустановкам)
                     local colors = {
                         Color3.fromRGB(255, 0, 0),
                         Color3.fromRGB(0, 255, 0),
@@ -1082,90 +1103,25 @@ function IllunixHub:CreateWindow(options)
                     end)
 
                     settingFrame.Size = UDim2.new(1, 0, 0, 36)
-                    settingFrame.BackgroundTransparency = 0
-                    settingsHeight = settingsHeight + 40
-
-                elseif setting.type == "toggle" then
-                    local name = setting.name or "Option"
-                    local defaultVal = setting.default or false
-                    local settingCallback = setting.callback or function() end
-
-                    local Label = Instance.new("TextLabel")
-                    Label.Parent = settingFrame
-                    Label.BackgroundTransparency = 1
-                    Label.Size = UDim2.new(0.7, 0, 1, 0)
-                    Label.Font = Enum.Font.Ubuntu
-                    Label.Text = name
-                    Label.TextColor3 = Color3.fromRGB(200, 200, 200)
-                    Label.TextSize = 12
-                    Label.TextXAlignment = Enum.TextXAlignment.Left
-
-                    local sBG = Instance.new("Frame")
-                    sBG.Parent = settingFrame
-                    sBG.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
-                    sBG.Position = UDim2.new(0.85, 0, 0.5, -10)
-                    sBG.Size = UDim2.new(0, 30, 0, 20)
-                    local sCorner = Instance.new("UICorner")
-                    sCorner.CornerRadius = UDim.new(1, 0)
-                    sCorner.Parent = sBG
-
-                    local sCircle = Instance.new("Frame")
-                    sCircle.Parent = sBG
-                    sCircle.BackgroundColor3 = Color3.fromRGB(150, 150, 150)
-                    sCircle.Size = UDim2.new(0, 14, 0, 14)
-                    sCircle.Position = UDim2.new(0, 3, 0.5, -7)
-                    local sCCorner = Instance.new("UICorner")
-                    sCCorner.CornerRadius = UDim.new(1, 0)
-                    sCCorner.Parent = sCircle
-
-                    local sVal = defaultVal
-                    local function updateSToggle()
-                        if sVal then
-                            sBG.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
-                            sCircle.Position = UDim2.new(1, -17, 0.5, -7)
-                            sCircle.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
-                        else
-                            sBG.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
-                            sCircle.Position = UDim2.new(0, 3, 0.5, -7)
-                            sCircle.BackgroundColor3 = Color3.fromRGB(150, 150, 150)
-                        end
-                    end
-                    updateSToggle()
-
-                    local sBtn = Instance.new("TextButton")
-                    sBtn.Parent = sBG
-                    sBtn.BackgroundTransparency = 1
-                    sBtn.Size = UDim2.new(1, 0, 1, 0)
-                    sBtn.Text = ""
-
-                    sBtn.MouseButton1Click:Connect(function()
-                        sVal = not sVal
-                        updateSToggle()
-                        settingCallback(sVal)
-                    end)
-
-                    settingFrame.Size = UDim2.new(1, 0, 0, 36)
-                    settingFrame.BackgroundTransparency = 0
+                    settingFrame.BackgroundTransparency = Settings.GUI.Transparency or 0
                     settingsHeight = settingsHeight + 40
                 end
             end
 
-            -- Обновляем размер контейнера
             local function updateSettingsHeight()
                 SettingsContainer.Size = UDim2.new(1, 0, 0, expanded and settingsHeight or 0)
                 Container.Size = UDim2.new(1, 0, 0, 42 + (expanded and settingsHeight or 0))
             end
 
-            -- Toggle логика
             local function updateToggle(anim)
                 local time = anim and 0.25 or 0
                 if toggled then
-                    Utility:Tween(SliderBG, {time}, {BackgroundColor3 = Color3.fromRGB(220, 220, 220)})
+                    Utility:Tween(SliderBG, {time}, {BackgroundColor3 = Settings.GUI.AccentColor})
                     Utility:Tween(SliderCircle, {time, Enum.EasingStyle.Quart, Enum.EasingDirection.Out}, {
                         Position = UDim2.new(1, -20, 0.5, -8),
                         BackgroundColor3 = Color3.fromRGB(30, 30, 35)
                     })
-                    Utility:Tween(SStroke, {time}, {Color = Color3.fromRGB(220, 220, 220)})
+                    Utility:Tween(SStroke, {time}, {Color = Settings.GUI.AccentColor})
                 else
                     Utility:Tween(SliderBG, {time}, {BackgroundColor3 = Color3.fromRGB(20, 20, 22)})
                     Utility:Tween(SliderCircle, {time, Enum.EasingStyle.Quart, Enum.EasingDirection.Out}, {
@@ -1184,7 +1140,6 @@ function IllunixHub:CreateWindow(options)
                 callback(toggled)
             end)
 
-            -- Шестерёнка - разворачивает настройки
             GearBtn.MouseButton1Click:Connect(function()
                 expanded = not expanded
                 Utility:Tween(GearBtn, {0.3}, {Rotation = expanded and 90 or 0})
@@ -1202,14 +1157,14 @@ function IllunixHub:CreateWindow(options)
                 Utility:Tween(GearBtn, {0.2}, {ImageColor3 = Color3.fromRGB(255, 255, 255)})
             end)
             GearBtn.MouseLeave:Connect(function()
-                Utility:Tween(GearBtn, {0.2}, {ImageColor3 = Color3.fromRGB(150, 150, 150)})
+                Utility:Tween(GearBtn, {0.2}, {ImageColor3 = Settings.GUI.AccentColor})
             end)
 
             updateSettingsHeight()
         end
 
         -- ============================================================
-        -- SLIDER (обычный, без шестерёнки)
+        -- SLIDER (обычный)
         -- ============================================================
         function Elements:CreateSlider(options)
             local name = options.Name or "Slider"
@@ -1227,6 +1182,7 @@ function IllunixHub:CreateWindow(options)
             SliderFrame.Parent = TabPage
             SliderFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
             SliderFrame.Size = UDim2.new(1, 0, 0, 60)
+            SliderFrame.BackgroundTransparency = Settings.GUI.Transparency or 0
 
             local SCorner = Instance.new("UICorner")
             SCorner.CornerRadius = UDim.new(0, 6)
@@ -1234,7 +1190,7 @@ function IllunixHub:CreateWindow(options)
 
             local SStroke = Instance.new("UIStroke")
             SStroke.Parent = SliderFrame
-            SStroke.Color = Color3.fromRGB(45, 45, 50)
+            SStroke.Color = Settings.GUI.AccentColor
             SStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 
             local TitleLab = Instance.new("TextLabel")
@@ -1270,7 +1226,7 @@ function IllunixHub:CreateWindow(options)
 
             local TrackFill = Instance.new("Frame")
             TrackFill.Parent = TrackBG
-            TrackFill.BackgroundColor3 = Color3.fromRGB(220, 220, 220)
+            TrackFill.BackgroundColor3 = Settings.GUI.AccentColor
             TrackFill.Size = UDim2.new(0, 0, 1, 0)
             local FCorner = Instance.new("UICorner")
             FCorner.CornerRadius = UDim.new(1, 0)
@@ -1414,6 +1370,7 @@ function IllunixHub:CreateWindow(options)
             KFrame.Parent = TabPage
             KFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
             KFrame.Size = UDim2.new(1, 0, 0, 42)
+            KFrame.BackgroundTransparency = Settings.GUI.Transparency or 0
 
             local KCorner = Instance.new("UICorner")
             KCorner.CornerRadius = UDim.new(0, 6)
@@ -1421,7 +1378,7 @@ function IllunixHub:CreateWindow(options)
 
             local KStroke = Instance.new("UIStroke")
             KStroke.Parent = KFrame
-            KStroke.Color = Color3.fromRGB(45, 45, 50)
+            KStroke.Color = Settings.GUI.AccentColor
             KStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 
             local KLabel = Instance.new("TextLabel")
@@ -1493,6 +1450,7 @@ function IllunixHub:CreateWindow(options)
             DropFrame.Size = UDim2.new(1, 0, 0, 42)
             DropFrame.ClipsDescendants = false
             DropFrame.ZIndex = 10
+            DropFrame.BackgroundTransparency = Settings.GUI.Transparency or 0
 
             local DCorner = Instance.new("UICorner")
             DCorner.CornerRadius = UDim.new(0, 6)
@@ -1500,7 +1458,7 @@ function IllunixHub:CreateWindow(options)
 
             local DStroke = Instance.new("UIStroke")
             DStroke.Parent = DropFrame
-            DStroke.Color = Color3.fromRGB(45, 45, 50)
+            DStroke.Color = Settings.GUI.AccentColor
             DStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 
             local DropBtn = Instance.new("TextButton")
@@ -1694,6 +1652,7 @@ function IllunixHub:CreateWindow(options)
             InputFrame.Parent = TabPage
             InputFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
             InputFrame.Size = UDim2.new(1, 0, 0, 42)
+            InputFrame.BackgroundTransparency = Settings.GUI.Transparency or 0
 
             local ICorner = Instance.new("UICorner")
             ICorner.CornerRadius = UDim.new(0, 6)
@@ -1701,7 +1660,7 @@ function IllunixHub:CreateWindow(options)
 
             local IStroke = Instance.new("UIStroke")
             IStroke.Parent = InputFrame
-            IStroke.Color = Color3.fromRGB(45, 45, 50)
+            IStroke.Color = Settings.GUI.AccentColor
             IStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 
             local TitleLab = Instance.new("TextLabel")
@@ -1757,6 +1716,7 @@ function IllunixHub:CreateWindow(options)
             CPFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
             CPFrame.Size = UDim2.new(1, 0, 0, 42)
             CPFrame.ClipsDescendants = true
+            CPFrame.BackgroundTransparency = Settings.GUI.Transparency or 0
 
             local CPCorner = Instance.new("UICorner")
             CPCorner.CornerRadius = UDim.new(0, 6)
@@ -1764,7 +1724,7 @@ function IllunixHub:CreateWindow(options)
 
             local CPStroke = Instance.new("UIStroke")
             CPStroke.Parent = CPFrame
-            CPStroke.Color = Color3.fromRGB(45, 45, 50)
+            CPStroke.Color = Settings.GUI.AccentColor
             CPStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 
             local CPLabel = Instance.new("TextLabel")
