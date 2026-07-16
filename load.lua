@@ -1,7 +1,7 @@
 local IllunixHub = loadstring(game:HttpGet("https://raw.githubusercontent.com/creeper7896453-alt/1/refs/heads/main/ui.lua"))()
 
 local Window = IllunixHub:CreateWindow({
-    Name = "Illunix Hub v2.0",
+    Name = "Illunix Hub v3.0",
     HideKey = Enum.KeyCode.Insert
 })
 
@@ -96,6 +96,31 @@ VisualTab:CreateToggle({
 })
 
 -- ============================================================
+-- GUI TAB (НАСТРОЙКИ ИНТЕРФЕЙСА)
+-- ============================================================
+local GUITab = Window:CreateTab("GUI")
+
+GUITab:CreateColorPicker({
+    Name = "Accent Color",
+    Default = Color3.fromRGB(220, 220, 220),
+    Callback = function(color)
+        Settings.GUI.AccentColor = color
+        ApplyGUISettings()
+    end
+})
+
+GUITab:CreateSlider({
+    Name = "Transparency",
+    Range = {0, 0.8},
+    Increment = 0.05,
+    CurrentValue = 0,
+    Callback = function(value)
+        Settings.GUI.Transparency = value
+        ApplyGUISettings()
+    end
+})
+
+-- ============================================================
 -- MISC TAB
 -- ============================================================
 local MiscTab = Window:CreateTab("Misc")
@@ -125,7 +150,7 @@ MiscTab:CreateButton({
 })
 
 IllunixHub:Notify({
-    Title = "✅ Illunix Hub v2.0 Loaded",
+    Title = "✅ Illunix Hub v3.0 Loaded",
     Content = "Press INSERT to open menu",
     Duration = 5
 })
