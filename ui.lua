@@ -1,18 +1,13 @@
--- MeisterUI.lua
--- Использование: loadstring(game:HttpGet("ссылка"))()
--- Автор: Meister
-
+-- MeisterUI v2.0 (FULLY WORKING)
 local MeisterUI = {}
 
 local TweenService = game:GetService("TweenService")
 local CoreGui = game:GetService("CoreGui")
 local UserInputService = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
 local TextService = game:GetService("TextService")
 
 local ParentGui = CoreGui
-if gethui then ParentGui = gethui()
-elseif set_thread_identity then set_thread_identity(8) end
+if gethui then ParentGui = gethui() end
 
 local ScreenObject = Instance.new("ScreenGui")
 ScreenObject.Name = "MeisterUI_Environment"
@@ -20,14 +15,6 @@ ScreenObject.IgnoreGuiInset = true
 ScreenObject.ResetOnSpawn = false
 ScreenObject.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 ScreenObject.Parent = ParentGui
-
-if ParentGui:FindFirstChild("MeisterUI_Environment") then
-    for _, v in pairs(ParentGui:GetChildren()) do
-        if v.Name == "MeisterUI_Environment" and v ~= ScreenObject then
-            v:Destroy()
-        end
-    end
-end
 
 local NotifContainer = Instance.new("Frame")
 NotifContainer.Name = "NotifContainer"
@@ -53,7 +40,7 @@ end
 function Utility:MakeDraggable(topbar, object)
     local Dragging, DragInput, DragStart, StartPosition
     topbar.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
             Dragging = true
             DragStart = input.Position
             StartPosition = object.Position
@@ -65,7 +52,7 @@ function Utility:MakeDraggable(topbar, object)
         end
     end)
     topbar.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        if input.UserInputType == Enum.UserInputType.MouseMovement then
             DragInput = input
         end
     end)
@@ -81,7 +68,7 @@ end
 
 function MeisterUI:Notify(options)
     local title = options.Title or "Notification"
-    local content = options.Content or "Notification content."
+    local content = options.Content or "Content"
     local duration = options.Duration or 3
 
     local NotifFrame = Instance.new("Frame")
@@ -157,23 +144,29 @@ function MeisterUI:Notify(options)
     local bounds = TextService:GetTextSize(content, 13, Enum.Font.Ubuntu, Vector2.new(270, math.huge))
     local totalHeight = 55 + bounds.Y
 
-    Utility:Tween(NotifFrame, {0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out}, {Size = UDim2.new(1, 0, 0, totalHeight), BackgroundTransparency = 0})
+    Utility:Tween(NotifFrame, {0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out}, {
+        Size = UDim2.new(1, 0, 0, totalHeight),
+        BackgroundTransparency = 0
+    })
     Utility:Tween(NotifStroke, {0.4}, {Transparency = 0})
     Utility:Tween(NotifTitle, {0.3}, {TextTransparency = 0})
     Utility:Tween(NotifText, {0.3}, {TextTransparency = 0})
     Utility:Tween(ProgressBarBG, {0.3}, {BackgroundTransparency = 0})
     Utility:Tween(ProgressBar, {0.3}, {BackgroundTransparency = 0})
-
-    Utility:Tween(ProgressBar, {duration, Enum.EasingStyle.Linear, Enum.EasingDirection.In}, {Size = UDim2.new(0, 0, 1, 0)})
+    Utility:Tween(ProgressBar, {duration, Enum.EasingStyle.Linear, Enum.EasingDirection.In}, {
+        Size = UDim2.new(0, 0, 1, 0)
+    })
 
     task.delay(duration, function()
         Utility:Tween(NotifTitle, {0.3}, {TextTransparency = 1})
         Utility:Tween(NotifText, {0.3}, {TextTransparency = 1})
         Utility:Tween(ProgressBarBG, {0.3}, {BackgroundTransparency = 1})
         Utility:Tween(ProgressBar, {0.3}, {BackgroundTransparency = 1})
-        local hideTween = Utility:Tween(NotifFrame, {0.4, Enum.EasingStyle.Back, Enum.EasingDirection.In}, {Size = UDim2.new(1, 0, 0, 0), BackgroundTransparency = 1})
+        local hideTween = Utility:Tween(NotifFrame, {0.4, Enum.EasingStyle.Back, Enum.EasingDirection.In}, {
+            Size = UDim2.new(1, 0, 0, 0),
+            BackgroundTransparency = 1
+        })
         Utility:Tween(NotifStroke, {0.4}, {Transparency = 1})
-
         hideTween.Completed:Connect(function()
             NotifFrame:Destroy()
         end)
@@ -183,7 +176,6 @@ end
 function MeisterUI:CreateWindow(options)
     local WindowName = options.Name or "MeisterUI"
     local HideKey = options.HideKey or Enum.KeyCode.Insert
-
     local WindowOpen = false
 
     local IntroOverlay = Instance.new("Frame")
@@ -255,13 +247,6 @@ function MeisterUI:CreateWindow(options)
     SidebarFix.Position = UDim2.new(1, -10, 0, 0)
     SidebarFix.Size = UDim2.new(0, 10, 1, 0)
     SidebarFix.BorderSizePixel = 0
-
-    local SidebarFixTop = Instance.new("Frame")
-    SidebarFixTop.Parent = Sidebar
-    SidebarFixTop.BackgroundColor3 = Color3.fromRGB(22, 22, 26)
-    SidebarFixTop.Position = UDim2.new(0, 0, 0, 0)
-    SidebarFixTop.Size = UDim2.new(1, 0, 0, 10)
-    SidebarFixTop.BorderSizePixel = 0
 
     local SidebarDivider = Instance.new("Frame")
     SidebarDivider.Parent = Sidebar
@@ -416,8 +401,6 @@ function MeisterUI:CreateWindow(options)
         end)
         if success and info and info.Name then
             GameLab.Text = info.Name
-        else
-            GameLab.Text = "Unknown Game"
         end
     end)
 
@@ -431,39 +414,21 @@ function MeisterUI:CreateWindow(options)
     task.spawn(function()
         Utility:Tween(IntroOverlay, {0.5}, {BackgroundTransparency = 0})
         task.wait(0.6)
-
         Utility:Tween(IntroTitle, {1.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out}, {TextTransparency = 0})
-
-        local glowTween = Utility:Tween(IntroTitle, {1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut}, {
-            Size = UDim2.new(0, 480, 0, 96),
-            Position = UDim2.new(0.5, -240, 0.5, -48)
-        })
-
         task.wait(1.5)
-
-        Utility:Tween(IntroTitle, {0.6}, {
-            TextTransparency = 1,
-            Size = UDim2.new(0, 600, 0, 120),
-            Position = UDim2.new(0.5, -300, 0.5, -60)
-        })
+        Utility:Tween(IntroTitle, {0.6}, {TextTransparency = 1})
         task.wait(0.7)
-
         MainFrame.Visible = true
         MainFrame.Size = UDim2.new(0, 550, 0, 300)
         MainFrame.Position = UDim2.new(0.5, -275, 0.5, -150)
-
         task.delay(1.5, function()
-            if IntroOverlay and IntroOverlay.Parent then
-                IntroOverlay:Destroy()
-            end
+            if IntroOverlay and IntroOverlay.Parent then IntroOverlay:Destroy() end
         end)
-
         local fadeBg = Utility:Tween(IntroOverlay, {0.8}, {BackgroundTransparency = 1})
         Utility:Tween(MainFrame, {0.8, Enum.EasingStyle.Back, Enum.EasingDirection.Out}, {
             Size = UDim2.new(0, 650, 0, 400),
             Position = UDim2.new(0.5, -325, 0.5, -200)
         })
-
         fadeBg.Completed:Connect(function()
             if IntroOverlay and IntroOverlay.Parent then IntroOverlay:Destroy() end
             WindowOpen = true
@@ -475,9 +440,15 @@ function MeisterUI:CreateWindow(options)
         WindowOpen = state
         if WindowOpen then
             MainFrame.Visible = true
-            Utility:Tween(MainFrame, {0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out}, {Size = UDim2.new(0, 650, 0, 400), Position = UDim2.new(0.5, -325, 0.5, -200)})
+            Utility:Tween(MainFrame, {0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out}, {
+                Size = UDim2.new(0, 650, 0, 400),
+                Position = UDim2.new(0.5, -325, 0.5, -200)
+            })
         else
-            local closeTween = Utility:Tween(MainFrame, {0.35, Enum.EasingStyle.Back, Enum.EasingDirection.In}, {Size = UDim2.new(0, 500, 0, 250), Position = UDim2.new(0.5, -250, 0.5, -125)})
+            local closeTween = Utility:Tween(MainFrame, {0.35, Enum.EasingStyle.Back, Enum.EasingDirection.In}, {
+                Size = UDim2.new(0, 500, 0, 250),
+                Position = UDim2.new(0.5, -250, 0.5, -125)
+            })
             closeTween.Completed:Connect(function()
                 if not WindowOpen then MainFrame.Visible = false end
             end)
@@ -486,9 +457,7 @@ function MeisterUI:CreateWindow(options)
     end
 
     CloseBtn.MouseButton1Click:Connect(function()
-        if WindowOpen then
-            ToggleUI(false)
-        end
+        if WindowOpen then ToggleUI(false) end
     end)
 
     UserInputService.InputBegan:Connect(function(input, gp)
@@ -574,10 +543,14 @@ function MeisterUI:CreateWindow(options)
             end
 
             Utility:Tween(TabBtn, {0.3}, {BackgroundTransparency = 0, TextColor3 = Color3.fromRGB(240, 240, 240)})
-            Utility:Tween(SelectedIndicator, {0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out}, {Size = UDim2.new(0, 3, 0, 18)})
+            Utility:Tween(SelectedIndicator, {0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out}, {
+                Size = UDim2.new(0, 3, 0, 18)
+            })
 
             TabPage.Visible = true
-            Utility:Tween(TabPage, {0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out}, {Position = UDim2.new(0, 0, 0, 0)})
+            Utility:Tween(TabPage, {0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out}, {
+                Position = UDim2.new(0, 0, 0, 0)
+            })
         end
 
         TabBtn.MouseButton1Click:Connect(ActivateTab)
@@ -719,11 +692,17 @@ function MeisterUI:CreateWindow(options)
                 local time = anim and 0.25 or 0
                 if toggled then
                     Utility:Tween(SliderBG, {time}, {BackgroundColor3 = Color3.fromRGB(220, 220, 220)})
-                    Utility:Tween(SliderCircle, {time, Enum.EasingStyle.Quart, Enum.EasingDirection.Out}, {Position = UDim2.new(1, -20, 0.5, -8), BackgroundColor3 = Color3.fromRGB(30, 30, 35)})
+                    Utility:Tween(SliderCircle, {time, Enum.EasingStyle.Quart, Enum.EasingDirection.Out}, {
+                        Position = UDim2.new(1, -20, 0.5, -8),
+                        BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+                    })
                     Utility:Tween(SStroke, {time}, {Color = Color3.fromRGB(220, 220, 220)})
                 else
                     Utility:Tween(SliderBG, {time}, {BackgroundColor3 = Color3.fromRGB(20, 20, 22)})
-                    Utility:Tween(SliderCircle, {time, Enum.EasingStyle.Quart, Enum.EasingDirection.Out}, {Position = UDim2.new(0, 4, 0.5, -8), BackgroundColor3 = Color3.fromRGB(150, 150, 150)})
+                    Utility:Tween(SliderCircle, {time, Enum.EasingStyle.Quart, Enum.EasingDirection.Out}, {
+                        Position = UDim2.new(0, 4, 0.5, -8),
+                        BackgroundColor3 = Color3.fromRGB(150, 150, 150)
+                    })
                     Utility:Tween(SStroke, {time}, {Color = Color3.fromRGB(50, 50, 55)})
                 end
             end
@@ -745,32 +724,14 @@ function MeisterUI:CreateWindow(options)
         end
 
         function Elements:CreateSlider(options)
-            local name     = options.Name or "Slider"
-            local min      = options.Range[1] or 0
-            local max      = options.Range[2] or 100
-            local default  = options.CurrentValue or min
-            local increment= options.Increment or 1
+            local name = options.Name or "Slider"
+            local min = options.Range[1] or 0
+            local max = options.Range[2] or 100
+            local default = options.CurrentValue or min
+            local increment = options.Increment or 1
             local callback = options.Callback or function() end
-            local isFloat  = (increment < 1) or (math.floor(min) ~= min) or (math.floor(max) ~= max)
-            local decimals = 0
-            if isFloat then
-                local s = tostring(increment)
-                local dot = s:find("%.")
-                decimals = dot and (#s - dot) or 2
-            end
-
-            local function snap(v)
-                if increment <= 0 then return v end
-                local snapped = math.floor((v - min) / increment + 0.5) * increment + min
-                snapped = math.clamp(snapped, min, max)
-                if isFloat then
-                    return tonumber(string.format("%%.%df" % decimals, snapped))
-                end
-                return math.floor(snapped + 0.5)
-            end
 
             local function fmt(v)
-                if isFloat then return string.format("%%.%df" % decimals, v) end
                 return tostring(math.floor(v + 0.5))
             end
 
@@ -798,7 +759,6 @@ function MeisterUI:CreateWindow(options)
             TitleLab.TextColor3 = Color3.fromRGB(220, 220, 220)
             TitleLab.TextSize = 14
             TitleLab.TextXAlignment = Enum.TextXAlignment.Left
-            TitleLab.TextTruncate = Enum.TextTruncate.AtEnd
 
             local ValueLab = Instance.new("TextLabel")
             ValueLab.Parent = SliderFrame
@@ -837,10 +797,6 @@ function MeisterUI:CreateWindow(options)
             Handle.BorderSizePixel = 0
             Handle.ZIndex = 3
             Instance.new("UICorner", Handle).CornerRadius = UDim.new(1, 0)
-            local HandleShadow = Instance.new("UIStroke", Handle)
-            HandleShadow.Color = Color3.fromRGB(0, 0, 0)
-            HandleShadow.Thickness = 1
-            HandleShadow.Transparency = 0.6
 
             local DragBtn = Instance.new("TextButton")
             DragBtn.Parent = TrackBG
@@ -850,16 +806,14 @@ function MeisterUI:CreateWindow(options)
             DragBtn.Text = ""
             DragBtn.ZIndex = 5
 
-            SliderFrame.MouseEnter:Connect(function() Utility:Tween(SliderFrame, {0.2}, {BackgroundColor3 = Color3.fromRGB(35, 35, 40)}) end)
-            SliderFrame.MouseLeave:Connect(function() Utility:Tween(SliderFrame, {0.2}, {BackgroundColor3 = Color3.fromRGB(30, 30, 35)}) end)
-
             local dragging = false
             local function updateSlider(input)
                 local trackWidth = TrackBG.AbsoluteSize.X
                 if trackWidth == 0 then trackWidth = 1 end
                 local sizeX = math.clamp((input.Position.X - TrackBG.AbsolutePosition.X) / trackWidth, 0, 1)
-                local raw   = min + (max - min) * sizeX
-                local value = snap(raw)
+                local value = min + (max - min) * sizeX
+                value = math.floor(value / increment + 0.5) * increment
+                value = math.clamp(value, min, max)
                 local fillX = (value - min) / math.max(max - min, 0.0001)
                 Utility:Tween(TrackFill, {0.05}, {Size = UDim2.new(fillX, 0, 1, 0)})
                 Handle.Position = UDim2.new(fillX, 0, 0.5, 0)
@@ -868,23 +822,20 @@ function MeisterUI:CreateWindow(options)
             end
 
             DragBtn.InputBegan:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                if input.UserInputType == Enum.UserInputType.MouseButton1 then
                     dragging = true
                     updateSlider(input)
                 end
             end)
             DragBtn.InputEnded:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                if input.UserInputType == Enum.UserInputType.MouseButton1 then
                     dragging = false
                 end
             end)
             UserInputService.InputChanged:Connect(function(input)
-                if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+                if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
                     updateSlider(input)
                 end
-            end)
-            UserInputService.InputEnded:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
             end)
 
             local initFill = (default - min) / math.max(max - min, 0.0001)
@@ -893,9 +844,9 @@ function MeisterUI:CreateWindow(options)
         end
 
         function Elements:CreateLabel(options)
-            local text    = options.Text or "Label"
-            local color   = options.Color or Color3.fromRGB(180, 180, 180)
-            local size    = options.TextSize or 13
+            local text = options.Text or "Label"
+            local color = options.Color or Color3.fromRGB(180, 180, 180)
+            local size = options.TextSize or 13
 
             local LFrame = Instance.new("Frame")
             LFrame.Parent = TabPage
@@ -954,8 +905,8 @@ function MeisterUI:CreateWindow(options)
         end
 
         function Elements:CreateKeybind(options)
-            local name     = options.Name or "Keybind"
-            local default  = options.CurrentKey or Enum.KeyCode.Unknown
+            local name = options.Name or "Keybind"
+            local default = options.CurrentKey or Enum.KeyCode.Unknown
             local callback = options.Callback or function() end
 
             local listening = false
@@ -985,7 +936,6 @@ function MeisterUI:CreateWindow(options)
             KLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
             KLabel.TextSize = 14
             KLabel.TextXAlignment = Enum.TextXAlignment.Left
-            KLabel.TextTruncate = Enum.TextTruncate.AtEnd
 
             local KeyBtn = Instance.new("TextButton")
             KeyBtn.Parent = KFrame
@@ -1000,9 +950,6 @@ function MeisterUI:CreateWindow(options)
             Instance.new("UICorner", KeyBtn).CornerRadius = UDim.new(0, 4)
             local KBStroke = Instance.new("UIStroke", KeyBtn)
             KBStroke.Color = Color3.fromRGB(55, 55, 60)
-
-            KFrame.MouseEnter:Connect(function() Utility:Tween(KFrame, {0.2}, {BackgroundColor3 = Color3.fromRGB(35, 35, 40)}) end)
-            KFrame.MouseLeave:Connect(function() Utility:Tween(KFrame, {0.2}, {BackgroundColor3 = Color3.fromRGB(30, 30, 35)}) end)
 
             KeyBtn.MouseButton1Click:Connect(function()
                 listening = true
@@ -1027,8 +974,8 @@ function MeisterUI:CreateWindow(options)
         end
 
         function Elements:CreateDropdown(options)
-            local name    = options.Name or "Dropdown"
-            local list    = options.Options or {}
+            local name = options.Name or "Dropdown"
+            local list = options.Options or {}
             local current = options.CurrentOption or (list[1] or "")
             local callback = options.Callback or function() end
 
@@ -1072,7 +1019,6 @@ function MeisterUI:CreateWindow(options)
             TitleLab.TextColor3 = Color3.fromRGB(220, 220, 220)
             TitleLab.TextSize = 14
             TitleLab.TextXAlignment = Enum.TextXAlignment.Left
-            TitleLab.TextTruncate = Enum.TextTruncate.AtEnd
             TitleLab.ZIndex = 11
 
             local ArrowLab = Instance.new("TextLabel")
@@ -1144,21 +1090,13 @@ function MeisterUI:CreateWindow(options)
                     Opt.AutoButtonColor = false
                     Opt.ZIndex = 52
 
-                    Opt.MouseEnter:Connect(function()
-                        if not isCurrent then
-                            Utility:Tween(Opt, {0.12}, {BackgroundTransparency = 0, BackgroundColor3 = Color3.fromRGB(42, 42, 50), TextColor3 = Color3.fromRGB(240, 240, 240)})
-                        end
-                    end)
-                    Opt.MouseLeave:Connect(function()
-                        if not isCurrent then
-                            Utility:Tween(Opt, {0.12}, {BackgroundTransparency = 1, TextColor3 = Color3.fromRGB(180, 180, 185)})
-                        end
-                    end)
                     Opt.MouseButton1Click:Connect(function()
                         current = option
                         TitleLab.Text = name .. "  ›  " .. tostring(current)
                         expanded = false
-                        Utility:Tween(ListPanel, {0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out}, {Size = UDim2.new(1, 0, 0, 0)})
+                        Utility:Tween(ListPanel, {0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out}, {
+                            Size = UDim2.new(1, 0, 0, 0)
+                        })
                         Utility:Tween(ArrowLab, {0.2}, {Rotation = 0})
                         task.wait(0.28)
                         ListPanel.Visible = false
@@ -1178,11 +1116,15 @@ function MeisterUI:CreateWindow(options)
                     local panelH = math.clamp(#list * ITEM_H + 8, 0, 180)
                     ListPanel.Visible = true
                     ListPanel.Size = UDim2.new(1, 0, 0, 0)
-                    Utility:Tween(ListPanel, {0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out}, {Size = UDim2.new(1, 0, 0, panelH)})
+                    Utility:Tween(ListPanel, {0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out}, {
+                        Size = UDim2.new(1, 0, 0, panelH)
+                    })
                     Utility:Tween(ArrowLab, {0.25}, {Rotation = 180})
                     Utility:Tween(DropFrame, {0.2}, {BackgroundColor3 = Color3.fromRGB(38, 38, 44)})
                 else
-                    Utility:Tween(ListPanel, {0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out}, {Size = UDim2.new(1, 0, 0, 0)})
+                    Utility:Tween(ListPanel, {0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out}, {
+                        Size = UDim2.new(1, 0, 0, 0)
+                    })
                     Utility:Tween(ArrowLab, {0.2}, {Rotation = 0})
                     Utility:Tween(DropFrame, {0.2}, {BackgroundColor3 = Color3.fromRGB(30, 30, 35)})
                     task.wait(0.28)
@@ -1192,26 +1134,23 @@ function MeisterUI:CreateWindow(options)
 
             DropBtn.MouseButton1Click:Connect(toggleDropdown)
 
-            DropFrame.MouseEnter:Connect(function()
-                if not expanded then Utility:Tween(DropFrame, {0.2}, {BackgroundColor3 = Color3.fromRGB(36, 36, 42)}) end
-            end)
-            DropFrame.MouseLeave:Connect(function()
-                if not expanded then Utility:Tween(DropFrame, {0.2}, {BackgroundColor3 = Color3.fromRGB(30, 30, 35)}) end
-            end)
-
             UserInputService.InputBegan:Connect(function(input)
                 if expanded and input.UserInputType == Enum.UserInputType.MouseButton1 then
                     local pos = input.Position
                     local panelPos = ListPanel.AbsolutePosition
-                    local panelSz  = ListPanel.AbsoluteSize
-                    local headPos  = DropFrame.AbsolutePosition
-                    local headSz   = DropFrame.AbsoluteSize
-                    local inHead   = pos.X >= headPos.X and pos.X <= headPos.X + headSz.X and pos.Y >= headPos.Y and pos.Y <= headPos.Y + headSz.Y
-                    local inPanel  = pos.X >= panelPos.X and pos.X <= panelPos.X + panelSz.X and pos.Y >= panelPos.Y and pos.Y <= panelPos.Y + panelSz.Y
+                    local panelSz = ListPanel.AbsoluteSize
+                    local headPos = DropFrame.AbsolutePosition
+                    local headSz = DropFrame.AbsoluteSize
+                    local inHead = pos.X >= headPos.X and pos.X <= headPos.X + headSz.X and
+                                   pos.Y >= headPos.Y and pos.Y <= headPos.Y + headSz.Y
+                    local inPanel = pos.X >= panelPos.X and pos.X <= panelPos.X + panelSz.X and
+                                    pos.Y >= panelPos.Y and pos.Y <= panelPos.Y + panelSz.Y
                     if not inHead and not inPanel then
                         task.spawn(function()
                             expanded = false
-                            Utility:Tween(ListPanel, {0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out}, {Size = UDim2.new(1, 0, 0, 0)})
+                            Utility:Tween(ListPanel, {0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out}, {
+                                Size = UDim2.new(1, 0, 0, 0)
+                            })
                             Utility:Tween(ArrowLab, {0.2}, {Rotation = 0})
                             Utility:Tween(DropFrame, {0.2}, {BackgroundColor3 = Color3.fromRGB(30, 30, 35)})
                             task.wait(0.28)
@@ -1267,7 +1206,6 @@ function MeisterUI:CreateWindow(options)
             TitleLab.TextColor3 = Color3.fromRGB(220, 220, 220)
             TitleLab.TextSize = 14
             TitleLab.TextXAlignment = Enum.TextXAlignment.Left
-            TitleLab.TextTruncate = Enum.TextTruncate.AtEnd
 
             local TextBoxBG = Instance.new("Frame")
             TextBoxBG.Parent = InputFrame
@@ -1291,7 +1229,7 @@ function MeisterUI:CreateWindow(options)
             TextBox.TextSize = 13
             TextBox.TextXAlignment = Enum.TextXAlignment.Left
 
-            TextBox.FocusLost:Connect(function(enterPressed)
+            TextBox.FocusLost:Connect(function()
                 callback(TextBox.Text)
             end)
         end
@@ -1435,19 +1373,16 @@ function MeisterUI:CreateWindow(options)
             HeaderBtn.MouseButton1Click:Connect(function()
                 expanded = not expanded
                 if expanded then
-                    Utility:Tween(CPFrame, {0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out}, {Size = UDim2.new(1, 0, 0, 270)})
+                    Utility:Tween(CPFrame, {0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out}, {
+                        Size = UDim2.new(1, 0, 0, 270)
+                    })
                     Utility:Tween(ArrowIcon, {0.3}, {Rotation = -90})
                 else
-                    Utility:Tween(CPFrame, {0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out}, {Size = UDim2.new(1, 0, 0, 42)})
+                    Utility:Tween(CPFrame, {0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out}, {
+                        Size = UDim2.new(1, 0, 0, 42)
+                    })
                     Utility:Tween(ArrowIcon, {0.3}, {Rotation = 90})
                 end
-            end)
-
-            HeaderBtn.MouseEnter:Connect(function()
-                Utility:Tween(CPFrame, {0.2}, {BackgroundColor3 = Color3.fromRGB(35, 35, 40)})
-            end)
-            HeaderBtn.MouseLeave:Connect(function()
-                Utility:Tween(CPFrame, {0.2}, {BackgroundColor3 = Color3.fromRGB(30, 30, 35)})
             end)
 
             Palette.InputBegan:Connect(function(input)
@@ -1503,235 +1438,6 @@ function MeisterUI:CreateWindow(options)
     end
 
     return Window
-end
-
-function MeisterUI:KeySystem(config)
-    local validKey = config.Key       or ""
-    local linkURL  = config.GetKeyURL or ""
-    local title    = config.Title     or "MEISTER"
-    local subtitle = config.Subtitle  or "Enter your key to continue"
-
-    local KGui = Instance.new("ScreenGui")
-    KGui.Name           = "MeisterUI_KeySystem"
-    KGui.DisplayOrder   = 9999
-    KGui.IgnoreGuiInset = true
-    KGui.ResetOnSpawn   = false
-    KGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    KGui.Parent         = ParentGui
-
-    local Overlay = Instance.new("Frame", KGui)
-    Overlay.Size                  = UDim2.fromScale(1,1)
-    Overlay.BackgroundColor3      = Color3.fromRGB(0,0,0)
-    Overlay.BackgroundTransparency= 1
-    Overlay.BorderSizePixel       = 0
-    Overlay.ZIndex                = 100
-
-    local Card = Instance.new("Frame", KGui)
-    Card.AnchorPoint      = Vector2.new(0.5,0.5)
-    Card.Position         = UDim2.fromScale(0.5, 0.52)
-    Card.Size             = UDim2.fromOffset(360, 200)
-    Card.BackgroundColor3 = Color3.fromRGB(15,15,18)
-    Card.BorderSizePixel  = 0
-    Card.ZIndex           = 101
-    Instance.new("UICorner",Card).CornerRadius = UDim.new(0,10)
-
-    local CardStroke = Instance.new("UIStroke",Card)
-    CardStroke.Color           = Color3.fromRGB(50,50,55)
-    CardStroke.Thickness       = 1
-    CardStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-
-    local Shadow = Instance.new("Frame",Card)
-    Shadow.BackgroundColor3       = Color3.fromRGB(0,0,0)
-    Shadow.Size                   = UDim2.new(1,10,1,10)
-    Shadow.Position               = UDim2.new(0,-5,0,-5)
-    Shadow.BackgroundTransparency = 0.8
-    Shadow.ZIndex                 = -1
-    Shadow.BorderSizePixel        = 0
-    Instance.new("UICorner",Shadow).CornerRadius = UDim.new(0,14)
-
-    local Header = Instance.new("Frame",Card)
-    Header.Size             = UDim2.new(1,0,0,35)
-    Header.BackgroundColor3 = Color3.fromRGB(22,22,26)
-    Header.BorderSizePixel  = 0
-    Header.ZIndex           = 102
-    Instance.new("UICorner",Header).CornerRadius = UDim.new(0,10)
-
-    local HFix = Instance.new("Frame",Header)
-    HFix.BackgroundColor3 = Color3.fromRGB(22,22,26)
-    HFix.Position         = UDim2.new(0,0,1,-10)
-    HFix.Size             = UDim2.new(1,0,0,10)
-    HFix.BorderSizePixel  = 0
-
-    local HDiv = Instance.new("Frame",Header)
-    HDiv.BackgroundColor3 = Color3.fromRGB(40,40,45)
-    HDiv.Position         = UDim2.new(0,0,1,-1)
-    HDiv.Size             = UDim2.new(1,0,0,1)
-    HDiv.BorderSizePixel  = 0
-
-    local TitleLb = Instance.new("TextLabel",Header)
-    TitleLb.BackgroundTransparency = 1
-    TitleLb.Position       = UDim2.new(0,15,0,0)
-    TitleLb.Size           = UDim2.new(1,-20,1,0)
-    TitleLb.Font           = Enum.Font.Ubuntu
-    TitleLb.Text           = title
-    TitleLb.TextColor3     = Color3.fromRGB(255,255,255)
-    TitleLb.TextSize       = 14
-    TitleLb.TextXAlignment = Enum.TextXAlignment.Left
-    TitleLb.ZIndex         = 103
-
-    local SubLb = Instance.new("TextLabel",Card)
-    SubLb.BackgroundTransparency = 1
-    SubLb.Position       = UDim2.new(0,18,0,46)
-    SubLb.Size           = UDim2.new(1,-36,0,18)
-    SubLb.Font           = Enum.Font.Ubuntu
-    SubLb.Text           = subtitle
-    SubLb.TextColor3     = Color3.fromRGB(150,150,150)
-    SubLb.TextSize       = 13
-    SubLb.TextXAlignment = Enum.TextXAlignment.Left
-    SubLb.ZIndex         = 102
-
-    local IBg = Instance.new("Frame",Card)
-    IBg.Size             = UDim2.new(1,-36,0,36)
-    IBg.Position         = UDim2.new(0,18,0,74)
-    IBg.BackgroundColor3 = Color3.fromRGB(25,25,25)
-    IBg.BorderSizePixel  = 0
-    IBg.ZIndex           = 102
-    Instance.new("UICorner",IBg).CornerRadius = UDim.new(0,8)
-
-    local IStroke = Instance.new("UIStroke",IBg)
-    IStroke.Color           = Color3.fromRGB(50,50,55)
-    IStroke.Thickness       = 1
-    IStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-
-    local IBox = Instance.new("TextBox",IBg)
-    IBox.Size                  = UDim2.new(1,-14,1,0)
-    IBox.Position              = UDim2.new(0,7,0,0)
-    IBox.BackgroundTransparency= 1
-    IBox.Text                  = ""
-    IBox.PlaceholderText       = "Paste your key here..."
-    IBox.PlaceholderColor3     = Color3.fromRGB(70,70,75)
-    IBox.TextColor3            = Color3.fromRGB(240,240,240)
-    IBox.Font                  = Enum.Font.Code
-    IBox.TextSize              = 13
-    IBox.ClearTextOnFocus      = false
-    IBox.ZIndex                = 103
-
-    local StatusLb = Instance.new("TextLabel",Card)
-    StatusLb.BackgroundTransparency = 1
-    StatusLb.Position       = UDim2.new(0,18,0,118)
-    StatusLb.Size           = UDim2.new(1,-36,0,16)
-    StatusLb.Font           = Enum.Font.Ubuntu
-    StatusLb.Text           = ""
-    StatusLb.TextColor3     = Color3.fromRGB(150,150,150)
-    StatusLb.TextSize       = 12
-    StatusLb.TextXAlignment = Enum.TextXAlignment.Left
-    StatusLb.ZIndex         = 102
-
-    local btnY = 143
-    local function MakeBtn(text, xOff, width, isPrimary)
-        local B = Instance.new("TextButton",Card)
-        B.Size             = UDim2.new(0, width, 0, 32)
-        B.Position         = UDim2.new(0, xOff, 0, btnY)
-        B.BackgroundColor3 = Color3.fromRGB(22,22,26)
-        B.BorderSizePixel  = 0
-        B.AutoButtonColor  = false
-        B.Font             = Enum.Font.Ubuntu
-        B.Text             = "   "..text
-        B.TextColor3       = isPrimary and Color3.fromRGB(220,220,220) or Color3.fromRGB(150,150,150)
-        B.TextSize         = 13
-        B.TextXAlignment   = Enum.TextXAlignment.Left
-        B.ZIndex           = 102
-        Instance.new("UICorner",B).CornerRadius = UDim.new(0,6)
-
-        local BS = Instance.new("UIStroke",B)
-        BS.Color           = Color3.fromRGB(50,50,55)
-        BS.Thickness       = 1
-        BS.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-
-        if isPrimary then
-            local Ind = Instance.new("Frame",B)
-            Ind.BackgroundColor3 = Color3.fromRGB(220,220,220)
-            Ind.Size             = UDim2.new(0,3,0,14)
-            Ind.Position         = UDim2.new(0,0,0.5,-7)
-            Ind.BorderSizePixel  = 0
-            Instance.new("UICorner",Ind).CornerRadius = UDim.new(1,0)
-        end
-
-        B.MouseEnter:Connect(function()
-            Utility:Tween(B,{0.2},{BackgroundColor3=Color3.fromRGB(30,30,36)})
-            Utility:Tween(BS,{0.2},{Color=Color3.fromRGB(80,80,85)})
-        end)
-        B.MouseLeave:Connect(function()
-            Utility:Tween(B,{0.2},{BackgroundColor3=Color3.fromRGB(22,22,26)})
-            Utility:Tween(BS,{0.2},{Color=Color3.fromRGB(50,50,55)})
-        end)
-        return B
-    end
-
-    local btnW   = (420-36-8) / 2
-    local BtnGet    = MakeBtn("Get Key", 18,          btnW, false)
-    local BtnSubmit = MakeBtn("Submit",  18+btnW+8,   btnW, true)
-
-    local FooterLb = Instance.new("TextLabel",Card)
-    FooterLb.BackgroundTransparency = 1
-    FooterLb.Position       = UDim2.new(0,18,1,-22)
-    FooterLb.Size           = UDim2.new(1,-36,0,14)
-    FooterLb.Font           = Enum.Font.Ubuntu
-    FooterLb.Text           = "meister library"
-    FooterLb.TextColor3     = Color3.fromRGB(60,60,65)
-    FooterLb.TextSize       = 11
-    FooterLb.TextXAlignment = Enum.TextXAlignment.Left
-    FooterLb.ZIndex         = 102
-
-    Utility:Tween(Overlay,{0.4},{BackgroundTransparency=0.35})
-    Utility:Tween(Card,{0.45,Enum.EasingStyle.Back,Enum.EasingDirection.Out},{
-        Size     = UDim2.fromOffset(420,195),
-        Position = UDim2.fromScale(0.5,0.5),
-    })
-
-    IBox.Focused:Connect(function()
-        Utility:Tween(IStroke,{0.2},{Color=Color3.fromRGB(120,120,130),Thickness=1.5})
-    end)
-    IBox.FocusLost:Connect(function()
-        Utility:Tween(IStroke,{0.2},{Color=Color3.fromRGB(50,50,55),Thickness=1})
-    end)
-
-    local function Shake()
-        local orig = Card.Position
-        for i = 1,7 do
-            Card.Position = orig + UDim2.fromOffset(i%2==0 and 7 or -7, 0)
-            task.wait(0.035)
-        end
-        Card.Position = orig
-    end
-
-    BtnGet.MouseButton1Click:Connect(function()
-        pcall(function() setclipboard(linkURL) end)
-        StatusLb.TextColor3 = Color3.fromRGB(130,190,130)
-        StatusLb.Text = "Link copied to clipboard."
-    end)
-
-    local _done = false
-    local function TryKey()
-        if string.gsub(IBox.Text, "%s+", "") == string.gsub(validKey, "%s+", "") then
-            _done = true
-            StatusLb.TextColor3 = Color3.fromRGB(130,190,130)
-            StatusLb.Text = "Key accepted. Loading..."
-            Utility:Tween(Card,{0.35,Enum.EasingStyle.Back,Enum.EasingDirection.In},{
-                Size=UDim2.fromOffset(360,160),Position=UDim2.fromScale(0.5,0.52)})
-            Utility:Tween(Overlay,{0.35},{BackgroundTransparency=1})
-            task.delay(0.4, function() KGui:Destroy() end)
-        else
-            StatusLb.TextColor3 = Color3.fromRGB(190,120,120)
-            StatusLb.Text = "Invalid key. Click 'Get Key' to receive yours."
-            task.spawn(Shake)
-        end
-    end
-
-    BtnSubmit.MouseButton1Click:Connect(TryKey)
-    IBox.FocusLost:Connect(function(enter) if enter then TryKey() end end)
-
-    repeat task.wait(0.05) until _done
 end
 
 return MeisterUI
