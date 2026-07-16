@@ -1,30 +1,35 @@
 local IllunixHub = loadstring(game:HttpGet("https://raw.githubusercontent.com/creeper7896453-alt/1/refs/heads/main/ui.lua"))()
 
 local Window = IllunixHub:CreateWindow({
-    Name = "Illunix Hub v1.0",
+    Name = "Illunix Hub v2.0",
     HideKey = Enum.KeyCode.Insert
 })
 
--- Movement Tab
+-- ============================================================
+-- MOVEMENT TAB
+-- ============================================================
 local MoveTab = Window:CreateTab("Movement")
 
 MoveTab:CreateToggle({
-    Name = "Fly (WASD + Space/Ctrl)",
+    Name = "Fly",
     CurrentValue = false,
     Callback = function(state)
         Settings.Fly = state
         if state then StartFly() else StopFly() end
-    end
-})
-
-MoveTab:CreateSlider({
-    Name = "Fly Speed",
-    Range = {10, 2000},
-    Increment = 10,
-    CurrentValue = 300,
-    Callback = function(value)
-        Settings.FlySpeed = value
-    end
+    end,
+    Settings = {
+        {
+            type = "slider",
+            name = "Speed",
+            min = 10,
+            max = 2000,
+            default = 300,
+            increment = 10,
+            callback = function(value)
+                Settings.FlySpeed = value
+            end
+        }
+    }
 })
 
 MoveTab:CreateToggle({
@@ -34,6 +39,16 @@ MoveTab:CreateToggle({
         Settings.Noclip = state
     end
 })
+
+MoveTab:CreateToggle({
+    Name = "Infinite Jump",
+    CurrentValue = false,
+    Callback = function(state)
+        Settings.InfiniteJump = state
+    end
+})
+
+MoveTab:CreateSeparator()
 
 MoveTab:CreateSlider({
     Name = "Walk Speed",
@@ -55,15 +70,9 @@ MoveTab:CreateSlider({
     end
 })
 
-MoveTab:CreateToggle({
-    Name = "Infinite Jump",
-    CurrentValue = false,
-    Callback = function(state)
-        Settings.InfiniteJump = state
-    end
-})
-
--- Visuals Tab
+-- ============================================================
+-- VISUALS TAB
+-- ============================================================
 local VisualTab = Window:CreateTab("Visuals")
 
 VisualTab:CreateToggle({
@@ -72,10 +81,23 @@ VisualTab:CreateToggle({
     Callback = function(state)
         Settings.ESP = state
         if state then UpdateESP() end
-    end
+    end,
+    Settings = {
+        {
+            type = "colorpicker",
+            name = "ESP Color",
+            default = Color3.fromRGB(255, 0, 0),
+            callback = function(color)
+                Settings.ESPColor = color
+                if Settings.ESP then UpdateESP() end
+            end
+        }
+    }
 })
 
--- Misc Tab
+-- ============================================================
+-- MISC TAB
+-- ============================================================
 local MiscTab = Window:CreateTab("Misc")
 
 MiscTab:CreateToggle({
@@ -86,8 +108,10 @@ MiscTab:CreateToggle({
     end
 })
 
+MiscTab:CreateSeparator()
+
 MiscTab:CreateButton({
-    Name = "Rejoin",
+    Name = "Rejoin Server",
     Callback = function()
         game:GetService("TeleportService"):Teleport(game.PlaceId, LocalPlayer)
     end
@@ -101,7 +125,7 @@ MiscTab:CreateButton({
 })
 
 IllunixHub:Notify({
-    Title = "✅ Illunix Hub Loaded",
+    Title = "✅ Illunix Hub v2.0 Loaded",
     Content = "Press INSERT to open menu",
     Duration = 5
 })
