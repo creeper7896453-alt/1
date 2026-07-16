@@ -1,7 +1,7 @@
 local MeisterUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/creeper7896453-alt/1/refs/heads/main/ui.lua"))()
 
 local Window = MeisterUI:CreateWindow({
-    Name = "My Hub v3.0",
+    Name = "Illunix hub",
     HideKey = Enum.KeyCode.Insert
 })
 
