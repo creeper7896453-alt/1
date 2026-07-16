@@ -156,7 +156,7 @@ function MeisterUI:Notify(options)
 
     local bounds = TextService:GetTextSize(content, 13, Enum.Font.Ubuntu, Vector2.new(270, math.huge))
     local totalHeight = 55 + bounds.Y
-    
+
     Utility:Tween(NotifFrame, {0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out}, {Size = UDim2.new(1, 0, 0, totalHeight), BackgroundTransparency = 0})
     Utility:Tween(NotifStroke, {0.4}, {Transparency = 0})
     Utility:Tween(NotifTitle, {0.3}, {TextTransparency = 0})
@@ -173,7 +173,7 @@ function MeisterUI:Notify(options)
         Utility:Tween(ProgressBar, {0.3}, {BackgroundTransparency = 1})
         local hideTween = Utility:Tween(NotifFrame, {0.4, Enum.EasingStyle.Back, Enum.EasingDirection.In}, {Size = UDim2.new(1, 0, 0, 0), BackgroundTransparency = 1})
         Utility:Tween(NotifStroke, {0.4}, {Transparency = 1})
-        
+
         hideTween.Completed:Connect(function()
             NotifFrame:Destroy()
         end)
@@ -183,7 +183,7 @@ end
 function MeisterUI:CreateWindow(options)
     local WindowName = options.Name or "MeisterUI"
     local HideKey = options.HideKey or Enum.KeyCode.Insert
-    
+
     local WindowOpen = false
 
     local IntroOverlay = Instance.new("Frame")
@@ -244,11 +244,11 @@ function MeisterUI:CreateWindow(options)
     Sidebar.Size = UDim2.new(0, 180, 1, -35)
     Sidebar.BorderSizePixel = 0
     Sidebar.ClipsDescendants = true
-    
+
     local SidebarCorner = Instance.new("UICorner")
     SidebarCorner.CornerRadius = UDim.new(0, 10)
     SidebarCorner.Parent = Sidebar
-    
+
     local SidebarFix = Instance.new("Frame")
     SidebarFix.Parent = Sidebar
     SidebarFix.BackgroundColor3 = Color3.fromRGB(22, 22, 26)
@@ -277,11 +277,11 @@ function MeisterUI:CreateWindow(options)
     Topbar.Size = UDim2.new(1, 0, 0, 35)
     Topbar.BorderSizePixel = 0
     Topbar.ZIndex = 5
-    
+
     local TopbarCorner = Instance.new("UICorner")
     TopbarCorner.CornerRadius = UDim.new(0, 10)
     TopbarCorner.Parent = Topbar
-    
+
     local TopbarFix = Instance.new("Frame")
     TopbarFix.Parent = Topbar
     TopbarFix.BackgroundColor3 = Color3.fromRGB(22, 22, 26)
@@ -297,7 +297,7 @@ function MeisterUI:CreateWindow(options)
     TopbarDivider.BorderSizePixel = 0
 
     Utility:MakeDraggable(Topbar, MainFrame)
-    
+
     local CloseBtn = Instance.new("TextButton")
     CloseBtn.Parent = Topbar
     CloseBtn.BackgroundTransparency = 1
@@ -338,7 +338,7 @@ function MeisterUI:CreateWindow(options)
     TabContainer.Size = UDim2.new(1, 0, 1, -80)
     TabContainer.ScrollBarThickness = 2
     TabContainer.ScrollBarImageColor3 = Color3.fromRGB(50, 50, 55)
-    
+
     local TabList = Instance.new("UIListLayout")
     TabList.Parent = TabContainer
     TabList.SortOrder = Enum.SortOrder.LayoutOrder
@@ -374,7 +374,7 @@ function MeisterUI:CreateWindow(options)
     local AvatarCorner = Instance.new("UICorner")
     AvatarCorner.CornerRadius = UDim.new(1, 0)
     AvatarCorner.Parent = AvatarImage
-    
+
     local NameLab = Instance.new("TextLabel")
     NameLab.Parent = ProfileFrame
     NameLab.BackgroundTransparency = 1
@@ -431,46 +431,46 @@ function MeisterUI:CreateWindow(options)
     task.spawn(function()
         Utility:Tween(IntroOverlay, {0.5}, {BackgroundTransparency = 0})
         task.wait(0.6)
-        
+
         Utility:Tween(IntroTitle, {1.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out}, {TextTransparency = 0})
-        
+
         local glowTween = Utility:Tween(IntroTitle, {1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut}, {
-            Size = UDim2.new(0, 480, 0, 96), 
+            Size = UDim2.new(0, 480, 0, 96),
             Position = UDim2.new(0.5, -240, 0.5, -48)
         })
-        
+
         task.wait(1.5)
-        
+
         Utility:Tween(IntroTitle, {0.6}, {
-            TextTransparency = 1, 
-            Size = UDim2.new(0, 600, 0, 120), 
+            TextTransparency = 1,
+            Size = UDim2.new(0, 600, 0, 120),
             Position = UDim2.new(0.5, -300, 0.5, -60)
         })
         task.wait(0.7)
-        
+
         MainFrame.Visible = true
         MainFrame.Size = UDim2.new(0, 550, 0, 300)
         MainFrame.Position = UDim2.new(0.5, -275, 0.5, -150)
-        
+
         task.delay(1.5, function()
             if IntroOverlay and IntroOverlay.Parent then
                 IntroOverlay:Destroy()
             end
         end)
-        
+
         local fadeBg = Utility:Tween(IntroOverlay, {0.8}, {BackgroundTransparency = 1})
         Utility:Tween(MainFrame, {0.8, Enum.EasingStyle.Back, Enum.EasingDirection.Out}, {
-            Size = UDim2.new(0, 650, 0, 400), 
+            Size = UDim2.new(0, 650, 0, 400),
             Position = UDim2.new(0.5, -325, 0.5, -200)
         })
-        
+
         fadeBg.Completed:Connect(function()
             if IntroOverlay and IntroOverlay.Parent then IntroOverlay:Destroy() end
             WindowOpen = true
             MeisterUI:Notify({Title = "Loaded", Content = "MeisterUI loaded successfully.", Duration = 4})
         end)
     end)
-    
+
     local function ToggleUI(state)
         WindowOpen = state
         if WindowOpen then
@@ -539,7 +539,7 @@ function MeisterUI:CreateWindow(options)
         TabPage.ScrollBarImageColor3 = Color3.fromRGB(50, 50, 55)
         TabPage.Visible = false
         TabPage.CanvasSize = UDim2.new(0,0,0,0)
-        
+
         table.insert(Pages, TabPage)
 
         local PageLayout = Instance.new("UIListLayout")
@@ -575,7 +575,7 @@ function MeisterUI:CreateWindow(options)
 
             Utility:Tween(TabBtn, {0.3}, {BackgroundTransparency = 0, TextColor3 = Color3.fromRGB(240, 240, 240)})
             Utility:Tween(SelectedIndicator, {0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out}, {Size = UDim2.new(0, 3, 0, 18)})
-            
+
             TabPage.Visible = true
             Utility:Tween(TabPage, {0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out}, {Position = UDim2.new(0, 0, 0, 0)})
         end
@@ -596,11 +596,11 @@ function MeisterUI:CreateWindow(options)
             ButtonFrame.Parent = TabPage
             ButtonFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
             ButtonFrame.Size = UDim2.new(1, 0, 0, 42)
-            
+
             local BtnCorner = Instance.new("UICorner")
             BtnCorner.CornerRadius = UDim.new(0, 6)
             BtnCorner.Parent = ButtonFrame
-            
+
             local BtnStroke = Instance.new("UIStroke")
             BtnStroke.Parent = ButtonFrame
             BtnStroke.Color = Color3.fromRGB(45, 45, 50)
@@ -663,11 +663,11 @@ function MeisterUI:CreateWindow(options)
             ToggleFrame.Parent = TabPage
             ToggleFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
             ToggleFrame.Size = UDim2.new(1, 0, 0, 42)
-            
+
             local TglCorner = Instance.new("UICorner")
             TglCorner.CornerRadius = UDim.new(0, 6)
             TglCorner.Parent = ToggleFrame
-            
+
             local TglStroke = Instance.new("UIStroke")
             TglStroke.Parent = ToggleFrame
             TglStroke.Color = Color3.fromRGB(45, 45, 50)
@@ -755,7 +755,7 @@ function MeisterUI:CreateWindow(options)
             local decimals = 0
             if isFloat then
                 local s = tostring(increment)
-                local dot = s:find("%.") 
+                local dot = s:find("%.")
                 decimals = dot and (#s - dot) or 2
             end
 
@@ -1247,11 +1247,11 @@ function MeisterUI:CreateWindow(options)
             InputFrame.Parent = TabPage
             InputFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
             InputFrame.Size = UDim2.new(1, 0, 0, 42)
-            
+
             local ICorner = Instance.new("UICorner")
             ICorner.CornerRadius = UDim.new(0, 6)
             ICorner.Parent = InputFrame
-            
+
             local IStroke = Instance.new("UIStroke")
             IStroke.Parent = InputFrame
             IStroke.Color = Color3.fromRGB(45, 45, 50)
