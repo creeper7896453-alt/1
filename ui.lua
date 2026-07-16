@@ -1,5 +1,5 @@
--- MeisterUI v3.0 (FULLY WORKING WITH REAL FUNCTIONS)
-local MeisterUI = {}
+-- Illunix Hub v1.0
+local IllunixHub = {}
 
 local TweenService = game:GetService("TweenService")
 local CoreGui = game:GetService("CoreGui")
@@ -11,7 +11,7 @@ local Workspace = game:GetService("Workspace")
 local LocalPlayer = Players.LocalPlayer
 local Camera = Workspace.CurrentCamera
 
--- Выбор родителя
+-- Родитель GUI
 local ParentGui = CoreGui
 if not ParentGui then
     ParentGui = LocalPlayer:FindFirstChild("PlayerGui")
@@ -21,7 +21,7 @@ if not ParentGui then
 end
 
 local ScreenObject = Instance.new("ScreenGui")
-ScreenObject.Name = "MeisterUI_Environment"
+ScreenObject.Name = "IllunixHub_Environment"
 ScreenObject.IgnoreGuiInset = true
 ScreenObject.ResetOnSpawn = false
 ScreenObject.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
@@ -79,7 +79,7 @@ NotifLayout.SortOrder = Enum.SortOrder.LayoutOrder
 NotifLayout.VerticalAlignment = Enum.VerticalAlignment.Bottom
 NotifLayout.Padding = UDim.new(0, 10)
 
-function MeisterUI:Notify(options)
+function IllunixHub:Notify(options)
     local title = options.Title or "Notification"
     local content = options.Content or "Content"
     local duration = options.Duration or 3
@@ -187,7 +187,7 @@ function MeisterUI:Notify(options)
 end
 
 -- ============================================================
--- РЕАЛЬНЫЕ НАСТРОЙКИ (ВСЁ РАБОТАЕТ)
+-- НАСТРОЙКИ (ВСЁ РАБОТАЕТ)
 -- ============================================================
 
 local Settings = {
@@ -262,10 +262,9 @@ local function UpdateNoclip()
     end
 end
 
--- ESP (Boxes над игроками)
+-- ESP
 local ESPObjects = {}
 local function UpdateESP()
-    -- Удаляем старые ESP
     for _, obj in pairs(ESPObjects) do
         if obj and obj.Parent then obj:Destroy() end
     end
@@ -304,11 +303,11 @@ local function StartAntiAFK()
 end
 
 -- ============================================================
--- UI ПОСТРОЕНИЕ
+-- UI
 -- ============================================================
 
-function MeisterUI:CreateWindow(options)
-    local WindowName = options.Name or "MeisterUI"
+function IllunixHub:CreateWindow(options)
+    local WindowName = options.Name or "Illunix Hub"
     local HideKey = options.HideKey or Enum.KeyCode.Insert
     local WindowOpen = false
 
@@ -328,7 +327,7 @@ function MeisterUI:CreateWindow(options)
     IntroTitle.Position = UDim2.new(0.5, -200, 0.5, -40)
     IntroTitle.Size = UDim2.new(0, 400, 0, 80)
     IntroTitle.Font = Enum.Font.Code
-    IntroTitle.Text = "MeisterUI"
+    IntroTitle.Text = "Illunix Hub"
     IntroTitle.TextColor3 = Color3.fromRGB(240, 240, 240)
     IntroTitle.TextScaled = true
     IntroTitle.TextTransparency = 1
@@ -518,7 +517,7 @@ function MeisterUI:CreateWindow(options)
     GameLab.TextSize = 11
     GameLab.TextXAlignment = Enum.TextXAlignment.Left
 
-    -- Загрузка аватарки
+    -- Avatar
     task.spawn(function()
         if LocalPlayer then
             local success, avatarUrl = pcall(function()
@@ -569,7 +568,7 @@ function MeisterUI:CreateWindow(options)
         fadeBg.Completed:Connect(function()
             if IntroOverlay and IntroOverlay.Parent then IntroOverlay:Destroy() end
             WindowOpen = true
-            MeisterUI:Notify({Title = "Loaded", Content = "MeisterUI loaded successfully.", Duration = 4})
+            IllunixHub:Notify({Title = "Loaded", Content = "Illunix Hub loaded successfully.", Duration = 4})
         end)
     end)
 
@@ -589,7 +588,7 @@ function MeisterUI:CreateWindow(options)
             closeTween.Completed:Connect(function()
                 if not WindowOpen then MainFrame.Visible = false end
             end)
-            MeisterUI:Notify({Title = "UI Hidden", Content = "Press INSERT to open the menu again.", Duration = 3})
+            IllunixHub:Notify({Title = "UI Hidden", Content = "Press INSERT to open the menu again.", Duration = 3})
         end
     end
 
@@ -605,7 +604,7 @@ function MeisterUI:CreateWindow(options)
     end)
 
     -- ============================================================
-    -- LOOP для Noclip и ESP
+    -- LOOPS
     -- ============================================================
     RunService.Stepped:Connect(function()
         -- Noclip
@@ -644,7 +643,7 @@ function MeisterUI:CreateWindow(options)
         end
     end)
 
-    -- ESP обновление при добавлении игроков
+    -- ESP
     Players.PlayerAdded:Connect(UpdateESP)
     Players.PlayerRemoving:Connect(UpdateESP)
     RunService.Stepped:Connect(function()
@@ -1659,4 +1658,4 @@ function MeisterUI:CreateWindow(options)
     return Window
 end
 
-return MeisterUI
+return IllunixHub
