@@ -1,11 +1,11 @@
-local MeisterUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/creeper7896453-alt/1/refs/heads/main/ui.lua"))()
+local IllunixHub = loadstring(game:HttpGet("https://raw.githubusercontent.com/creeper7896453-alt/1/refs/heads/main/ui.lua"))()
 
-local Window = MeisterUI:CreateWindow({
-    Name = "Illunix hub",
+local Window = IllunixHub:CreateWindow({
+    Name = "Illunix Hub v1.0",
     HideKey = Enum.KeyCode.Insert
 })
 
--- Вкладка Movement
+-- Movement Tab
 local MoveTab = Window:CreateTab("Movement")
 
 MoveTab:CreateToggle({
@@ -63,7 +63,7 @@ MoveTab:CreateToggle({
     end
 })
 
--- Вкладка Visuals
+-- Visuals Tab
 local VisualTab = Window:CreateTab("Visuals")
 
 VisualTab:CreateToggle({
@@ -75,7 +75,7 @@ VisualTab:CreateToggle({
     end
 })
 
--- Вкладка Misc
+-- Misc Tab
 local MiscTab = Window:CreateTab("Misc")
 
 MiscTab:CreateToggle({
@@ -100,8 +100,8 @@ MiscTab:CreateButton({
     end
 })
 
-MeisterUI:Notify({
-    Title = "✅ Loaded",
+IllunixHub:Notify({
+    Title = "✅ Illunix Hub Loaded",
     Content = "Press INSERT to open menu",
     Duration = 5
 })
