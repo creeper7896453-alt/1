@@ -1,4 +1,4 @@
--- MeisterUI v2.0 (FULLY WORKING WITH ANIMATIONS)
+-- MeisterUI v3.0 (FULLY WORKING WITH REAL FUNCTIONS)
 local MeisterUI = {}
 
 local TweenService = game:GetService("TweenService")
@@ -6,10 +6,12 @@ local CoreGui = game:GetService("CoreGui")
 local UserInputService = game:GetService("UserInputService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
 
 local LocalPlayer = Players.LocalPlayer
+local Camera = Workspace.CurrentCamera
 
--- Выбираем родителя для GUI
+-- Выбор родителя
 local ParentGui = CoreGui
 if not ParentGui then
     ParentGui = LocalPlayer:FindFirstChild("PlayerGui")
@@ -25,7 +27,7 @@ ScreenObject.ResetOnSpawn = false
 ScreenObject.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 ScreenObject.Parent = ParentGui
 
--- Утилиты для анимаций
+-- Утилиты
 local Utility = {}
 function Utility:Tween(object, info, properties)
     local t = TweenService:Create(object, TweenInfo.new(unpack(info)), properties)
@@ -62,7 +64,7 @@ function Utility:MakeDraggable(topbar, object)
     end)
 end
 
--- Контейнер для уведомлений
+-- Notifications
 local NotifContainer = Instance.new("Frame")
 NotifContainer.Name = "NotifContainer"
 NotifContainer.Parent = ScreenObject
@@ -184,12 +186,133 @@ function MeisterUI:Notify(options)
     end)
 end
 
+-- ============================================================
+-- РЕАЛЬНЫЕ НАСТРОЙКИ (ВСЁ РАБОТАЕТ)
+-- ============================================================
+
+local Settings = {
+    Fly = false,
+    FlySpeed = 300,
+    Noclip = false,
+    WalkSpeed = 16,
+    JumpPower = 50,
+    InfiniteJump = false,
+    ESP = false,
+    AntiAFK = false,
+}
+
+-- FLY
+local FlyBV, FlyBG, FlyConn
+local function StartFly()
+    local char = LocalPlayer.Character
+    local root = char and char:FindFirstChild("HumanoidRootPart")
+    local hum = char and char:FindFirstChildOfClass("Humanoid")
+    if not root or not hum then return end
+
+    if FlyBV then FlyBV:Destroy() end
+    if FlyBG then FlyBG:Destroy() end
+    if FlyConn then FlyConn:Disconnect() end
+
+    hum.PlatformStand = true
+
+    FlyBG = Instance.new("BodyGyro")
+    FlyBG.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+    FlyBG.P = 5e4
+    FlyBG.CFrame = root.CFrame
+    FlyBG.Parent = root
+
+    FlyBV = Instance.new("BodyVelocity")
+    FlyBV.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+    FlyBV.Velocity = Vector3.zero
+    FlyBV.Parent = root
+
+    FlyConn = RunService.RenderStepped:Connect(function()
+        if not Settings.Fly then return end
+        local cam = Camera.CFrame
+        local spd = Settings.FlySpeed
+        local vel = Vector3.zero
+        if UserInputService:IsKeyDown(Enum.KeyCode.W) then vel = vel + cam.LookVector * spd end
+        if UserInputService:IsKeyDown(Enum.KeyCode.S) then vel = vel - cam.LookVector * spd end
+        if UserInputService:IsKeyDown(Enum.KeyCode.A) then vel = vel - cam.RightVector * spd end
+        if UserInputService:IsKeyDown(Enum.KeyCode.D) then vel = vel + cam.RightVector * spd end
+        if UserInputService:IsKeyDown(Enum.KeyCode.Space) then vel = vel + Vector3.yAxis * spd end
+        if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) then vel = vel - Vector3.yAxis * spd end
+        FlyBV.Velocity = vel
+        FlyBG.CFrame = cam
+    end)
+end
+
+local function StopFly()
+    Settings.Fly = false
+    if FlyConn then FlyConn:Disconnect(); FlyConn = nil end
+    if FlyBV then FlyBV:Destroy(); FlyBV = nil end
+    if FlyBG then FlyBG:Destroy(); FlyBG = nil end
+    local hum = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+    if hum then hum.PlatformStand = false end
+end
+
+-- NOCLIP
+local function UpdateNoclip()
+    local char = LocalPlayer.Character
+    if not char then return end
+    for _, part in pairs(char:GetDescendants()) do
+        if part:IsA("BasePart") then
+            part.CanCollide = not Settings.Noclip
+        end
+    end
+end
+
+-- ESP (Boxes над игроками)
+local ESPObjects = {}
+local function UpdateESP()
+    -- Удаляем старые ESP
+    for _, obj in pairs(ESPObjects) do
+        if obj and obj.Parent then obj:Destroy() end
+    end
+    ESPObjects = {}
+
+    if not Settings.ESP then return end
+
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character then
+            local root = player.Character:FindFirstChild("HumanoidRootPart")
+            if root then
+                local box = Instance.new("BoxHandleAdornment")
+                box.Size = Vector3.new(3, 5, 3)
+                box.Adornee = root
+                box.AlwaysOnTop = true
+                box.ZIndex = 10
+                box.Color3 = Color3.fromRGB(255, 0, 0)
+                box.Transparency = 0.5
+                box.Parent = root
+                table.insert(ESPObjects, box)
+            end
+        end
+    end
+end
+
+-- ANTI-AFK
+local function StartAntiAFK()
+    local vu = game:GetService("VirtualUser")
+    LocalPlayer.Idled:Connect(function()
+        if Settings.AntiAFK then
+            vu:Button2Down(Vector2.new(0, 0), Camera.CFrame)
+            task.wait(1)
+            vu:Button2Up(Vector2.new(0, 0), Camera.CFrame)
+        end
+    end)
+end
+
+-- ============================================================
+-- UI ПОСТРОЕНИЕ
+-- ============================================================
+
 function MeisterUI:CreateWindow(options)
     local WindowName = options.Name or "MeisterUI"
     local HideKey = options.HideKey or Enum.KeyCode.Insert
     local WindowOpen = false
 
-    -- Intro Overlay
+    -- Intro
     local IntroOverlay = Instance.new("Frame")
     IntroOverlay.Name = "IntroOverlay"
     IntroOverlay.Parent = ScreenObject
@@ -227,7 +350,6 @@ function MeisterUI:CreateWindow(options)
     MainStroke.Parent = MainFrame
     MainStroke.Color = Color3.fromRGB(50, 50, 55)
     MainStroke.Thickness = 1
-    MainStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 
     -- Shadow
     local ShadowFrame = Instance.new("Frame")
@@ -330,7 +452,7 @@ function MeisterUI:CreateWindow(options)
     MainTitle.TextYAlignment = Enum.TextYAlignment.Center
     MainTitle.TextTruncate = Enum.TextTruncate.AtEnd
 
-    -- Tab Container
+    -- Tabs Container
     local TabContainer = Instance.new("ScrollingFrame")
     TabContainer.Name = "TabContainer"
     TabContainer.Parent = Sidebar
@@ -384,7 +506,6 @@ function MeisterUI:CreateWindow(options)
     NameLab.TextColor3 = Color3.fromRGB(240, 240, 240)
     NameLab.TextSize = 13
     NameLab.TextXAlignment = Enum.TextXAlignment.Left
-    NameLab.TextTruncate = Enum.TextTruncate.AtEnd
 
     local GameLab = Instance.new("TextLabel")
     GameLab.Parent = ProfileFrame
@@ -396,7 +517,6 @@ function MeisterUI:CreateWindow(options)
     GameLab.TextColor3 = Color3.fromRGB(150, 150, 150)
     GameLab.TextSize = 11
     GameLab.TextXAlignment = Enum.TextXAlignment.Left
-    GameLab.TextTruncate = Enum.TextTruncate.AtEnd
 
     -- Загрузка аватарки
     task.spawn(function()
@@ -410,7 +530,6 @@ function MeisterUI:CreateWindow(options)
         end
     end)
 
-    -- Загрузка названия игры
     task.spawn(function()
         local success, info = pcall(function()
             return game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId)
@@ -428,7 +547,7 @@ function MeisterUI:CreateWindow(options)
     ContentArea.Position = UDim2.new(0, 181, 0, 35)
     ContentArea.Size = UDim2.new(1, -181, 1, -35)
 
-    -- Анимация загрузки
+    -- Intro Animation
     task.spawn(function()
         Utility:Tween(IntroOverlay, {0.5}, {BackgroundTransparency = 0})
         task.wait(0.6)
@@ -478,7 +597,6 @@ function MeisterUI:CreateWindow(options)
         if WindowOpen then ToggleUI(false) end
     end)
 
-    -- INSERT Toggle (fixed)
     UserInputService.InputBegan:Connect(function(input, gp)
         if gp then return end
         if input.KeyCode == HideKey then
@@ -486,6 +604,61 @@ function MeisterUI:CreateWindow(options)
         end
     end)
 
+    -- ============================================================
+    -- LOOP для Noclip и ESP
+    -- ============================================================
+    RunService.Stepped:Connect(function()
+        -- Noclip
+        if Settings.Noclip then
+            local char = LocalPlayer.Character
+            if char then
+                for _, part in pairs(char:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        part.CanCollide = false
+                    end
+                end
+            end
+        end
+
+        -- WalkSpeed / JumpPower
+        local char = LocalPlayer.Character
+        if char then
+            local hum = char:FindFirstChildOfClass("Humanoid")
+            if hum then
+                if hum.WalkSpeed ~= Settings.WalkSpeed then
+                    hum.WalkSpeed = Settings.WalkSpeed
+                end
+                if Settings.JumpPower ~= 50 then
+                    hum.UseJumpPower = true
+                    hum.JumpPower = Settings.JumpPower
+                end
+            end
+        end
+    end)
+
+    -- Infinite Jump
+    UserInputService.JumpRequest:Connect(function()
+        if Settings.InfiniteJump then
+            local hum = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+            if hum then hum:ChangeState("Jumping") end
+        end
+    end)
+
+    -- ESP обновление при добавлении игроков
+    Players.PlayerAdded:Connect(UpdateESP)
+    Players.PlayerRemoving:Connect(UpdateESP)
+    RunService.Stepped:Connect(function()
+        if Settings.ESP then
+            UpdateESP()
+        end
+    end)
+
+    -- Anti-AFK
+    StartAntiAFK()
+
+    -- ============================================================
+    -- WINDOW
+    -- ============================================================
     local Window = {}
     local Pages = {}
 
