@@ -1,4 +1,4 @@
--- Illunix Hub v1.0
+-- Illunix Hub v2.0 (FULLY WORKING + SETTINGS GEAR)
 local IllunixHub = {}
 
 local TweenService = game:GetService("TweenService")
@@ -7,6 +7,7 @@ local UserInputService = game:GetService("UserInputService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
+local TextService = game:GetService("TextService")
 
 local LocalPlayer = Players.LocalPlayer
 local Camera = Workspace.CurrentCamera
@@ -154,7 +155,7 @@ function IllunixHub:Notify(options)
     ProgressBarCorner.CornerRadius = UDim.new(1, 0)
     ProgressBarCorner.Parent = ProgressBar
 
-    local bounds = game:GetService("TextService"):GetTextSize(content, 13, Enum.Font.Ubuntu, Vector2.new(270, math.huge))
+    local bounds = TextService:GetTextSize(content, 13, Enum.Font.Ubuntu, Vector2.new(270, math.huge))
     local totalHeight = 55 + bounds.Y
 
     Utility:Tween(NotifFrame, {0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out}, {
@@ -187,7 +188,7 @@ function IllunixHub:Notify(options)
 end
 
 -- ============================================================
--- НАСТРОЙКИ (ВСЁ РАБОТАЕТ)
+-- РЕАЛЬНЫЕ НАСТРОЙКИ (ВСЁ РАБОТАЕТ)
 -- ============================================================
 
 local Settings = {
@@ -198,6 +199,7 @@ local Settings = {
     JumpPower = 50,
     InfiniteJump = false,
     ESP = false,
+    ESPColor = Color3.fromRGB(255, 0, 0),
     AntiAFK = false,
 }
 
@@ -281,7 +283,7 @@ local function UpdateESP()
                 box.Adornee = root
                 box.AlwaysOnTop = true
                 box.ZIndex = 10
-                box.Color3 = Color3.fromRGB(255, 0, 0)
+                box.Color3 = Settings.ESPColor
                 box.Transparency = 0.5
                 box.Parent = root
                 table.insert(ESPObjects, box)
@@ -752,6 +754,9 @@ function IllunixHub:CreateWindow(options)
 
         local Elements = {}
 
+        -- ============================================================
+        -- BUTTON
+        -- ============================================================
         function Elements:CreateButton(options)
             local name = options.Name or "Button"
             local callback = options.Callback or function() end
@@ -786,7 +791,6 @@ function IllunixHub:CreateWindow(options)
             BtnText.TextColor3 = Color3.fromRGB(220, 220, 220)
             BtnText.TextSize = 14
             BtnText.TextXAlignment = Enum.TextXAlignment.Left
-            BtnText.TextTruncate = Enum.TextTruncate.AtEnd
 
             local BtnIcon = Instance.new("ImageLabel")
             BtnIcon.Parent = ButtonFrame
@@ -818,13 +822,24 @@ function IllunixHub:CreateWindow(options)
             end)
         end
 
+        -- ============================================================
+        -- TOGGLE С ШЕСТЕРЁНКОЙ И РАЗВОРАЧИВАЮЩИМИСЯ НАСТРОЙКАМИ
+        -- ============================================================
         function Elements:CreateToggle(options)
             local name = options.Name or "Toggle"
             local default = options.CurrentValue or false
             local callback = options.Callback or function() end
+            local settings = options.Settings or {} -- { {type="slider", name="Speed", min=1, max=100, default=50, callback=function() end} }
 
+            local Container = Instance.new("Frame")
+            Container.Parent = TabPage
+            Container.BackgroundTransparency = 1
+            Container.Size = UDim2.new(1, 0, 0, 42)
+            Container.ClipsDescendants = true
+
+            -- Основной Toggle Frame
             local ToggleFrame = Instance.new("Frame")
-            ToggleFrame.Parent = TabPage
+            ToggleFrame.Parent = Container
             ToggleFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
             ToggleFrame.Size = UDim2.new(1, 0, 0, 42)
 
@@ -847,18 +862,17 @@ function IllunixHub:CreateWindow(options)
             TglText.Parent = ToggleFrame
             TglText.BackgroundTransparency = 1
             TglText.Position = UDim2.new(0, 15, 0, 0)
-            TglText.Size = UDim2.new(1, -60, 1, 0)
+            TglText.Size = UDim2.new(1, -90, 1, 0)
             TglText.Font = Enum.Font.Ubuntu
             TglText.Text = name
             TglText.TextColor3 = Color3.fromRGB(220, 220, 220)
             TglText.TextSize = 14
             TglText.TextXAlignment = Enum.TextXAlignment.Left
-            TglText.TextTruncate = Enum.TextTruncate.AtEnd
 
             local SliderBG = Instance.new("Frame")
             SliderBG.Parent = ToggleFrame
             SliderBG.BackgroundColor3 = Color3.fromRGB(20, 20, 22)
-            SliderBG.Position = UDim2.new(1, -45, 0.5, -12)
+            SliderBG.Position = UDim2.new(1, -75, 0.5, -12)
             SliderBG.Size = UDim2.new(0, 36, 0, 24)
             local SCorner = Instance.new("UICorner")
             SCorner.CornerRadius = UDim.new(1, 0)
@@ -877,8 +891,272 @@ function IllunixHub:CreateWindow(options)
             CCorner.CornerRadius = UDim.new(1, 0)
             CCorner.Parent = SliderCircle
 
-            local toggled = default
+            -- Шестерёнка
+            local GearBtn = Instance.new("ImageButton")
+            GearBtn.Parent = ToggleFrame
+            GearBtn.BackgroundTransparency = 1
+            GearBtn.Position = UDim2.new(1, -32, 0.5, -10)
+            GearBtn.Size = UDim2.new(0, 20, 0, 20)
+            GearBtn.Image = "rbxassetid://6031090835"
+            GearBtn.ImageColor3 = Color3.fromRGB(150, 150, 150)
+            GearBtn.ZIndex = 2
 
+            -- Контейнер для настроек (разворачивается)
+            local SettingsContainer = Instance.new("Frame")
+            SettingsContainer.Parent = Container
+            SettingsContainer.BackgroundTransparency = 1
+            SettingsContainer.Position = UDim2.new(0, 0, 0, 42)
+            SettingsContainer.Size = UDim2.new(1, 0, 0, 0)
+            SettingsContainer.ClipsDescendants = true
+
+            local SettingsList = Instance.new("UIListLayout")
+            SettingsList.Parent = SettingsContainer
+            SettingsList.SortOrder = Enum.SortOrder.LayoutOrder
+            SettingsList.Padding = UDim.new(0, 4)
+
+            local SettingsPad = Instance.new("UIPadding")
+            SettingsPad.Parent = SettingsContainer
+            SettingsPad.PaddingLeft = UDim.new(0, 15)
+            SettingsPad.PaddingRight = UDim.new(0, 15)
+
+            local toggled = default
+            local expanded = false
+            local settingsHeight = 0
+
+            -- Создаём элементы настроек
+            local SettingElements = {}
+            for _, setting in ipairs(settings) do
+                local settingFrame = Instance.new("Frame")
+                settingFrame.Parent = SettingsContainer
+                settingFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+                settingFrame.Size = UDim2.new(1, 0, 0, 36)
+                settingFrame.BackgroundTransparency = 1
+
+                local settingCorner = Instance.new("UICorner")
+                settingCorner.CornerRadius = UDim.new(0, 4)
+                settingCorner.Parent = settingFrame
+
+                if setting.type == "slider" then
+                    local name = setting.name or "Value"
+                    local min = setting.min or 0
+                    local max = setting.max or 100
+                    local default = setting.default or min
+                    local increment = setting.increment or 1
+                    local settingCallback = setting.callback or function() end
+
+                    local Label = Instance.new("TextLabel")
+                    Label.Parent = settingFrame
+                    Label.BackgroundTransparency = 1
+                    Label.Size = UDim2.new(0.4, 0, 1, 0)
+                    Label.Font = Enum.Font.Ubuntu
+                    Label.Text = name
+                    Label.TextColor3 = Color3.fromRGB(200, 200, 200)
+                    Label.TextSize = 12
+                    Label.TextXAlignment = Enum.TextXAlignment.Left
+
+                    local ValueLabel = Instance.new("TextLabel")
+                    ValueLabel.Parent = settingFrame
+                    ValueLabel.BackgroundTransparency = 1
+                    ValueLabel.Size = UDim2.new(0.15, 0, 1, 0)
+                    ValueLabel.Position = UDim2.new(0.85, 0, 0, 0)
+                    ValueLabel.Font = Enum.Font.Ubuntu
+                    ValueLabel.Text = tostring(default)
+                    ValueLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
+                    ValueLabel.TextSize = 12
+                    ValueLabel.TextXAlignment = Enum.TextXAlignment.Right
+
+                    local Track = Instance.new("Frame")
+                    Track.Parent = settingFrame
+                    Track.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
+                    Track.Position = UDim2.new(0.42, 0, 0.5, -3)
+                    Track.Size = UDim2.new(0.4, 0, 0, 6)
+                    local TrackCorner = Instance.new("UICorner")
+                    TrackCorner.CornerRadius = UDim.new(1, 0)
+                    TrackCorner.Parent = Track
+
+                    local Fill = Instance.new("Frame")
+                    Fill.Parent = Track
+                    Fill.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
+                    Fill.Size = UDim2.new((default - min) / (max - min), 0, 1, 0)
+                    local FillCorner = Instance.new("UICorner")
+                    FillCorner.CornerRadius = UDim.new(1, 0)
+                    FillCorner.Parent = Fill
+
+                    local val = default
+                    local dragging = false
+
+                    local function updateSlider(input)
+                        local trackWidth = Track.AbsoluteSize.X
+                        if trackWidth == 0 then trackWidth = 1 end
+                        local sizeX = math.clamp((input.Position.X - Track.AbsolutePosition.X) / trackWidth, 0, 1)
+                        local value = min + (max - min) * sizeX
+                        value = math.floor(value / increment + 0.5) * increment
+                        value = math.clamp(value, min, max)
+                        val = value
+                        Fill.Size = UDim2.new((val - min) / (max - min), 0, 1, 0)
+                        ValueLabel.Text = tostring(val)
+                        settingCallback(val)
+                    end
+
+                    local DragBtn = Instance.new("TextButton")
+                    DragBtn.Parent = Track
+                    DragBtn.BackgroundTransparency = 1
+                    DragBtn.Size = UDim2.new(1, 0, 1, 4)
+                    DragBtn.Position = UDim2.new(0, 0, 0, -2)
+                    DragBtn.Text = ""
+
+                    DragBtn.InputBegan:Connect(function(input)
+                        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                            dragging = true
+                            updateSlider(input)
+                        end
+                    end)
+                    DragBtn.InputEnded:Connect(function(input)
+                        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                            dragging = false
+                        end
+                    end)
+                    UserInputService.InputChanged:Connect(function(input)
+                        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+                            updateSlider(input)
+                        end
+                    end)
+
+                    settingFrame.Size = UDim2.new(1, 0, 0, 36)
+                    settingFrame.BackgroundTransparency = 0
+                    settingsHeight = settingsHeight + 40
+
+                elseif setting.type == "colorpicker" then
+                    local name = setting.name or "Color"
+                    local defaultColor = setting.default or Color3.fromRGB(255, 0, 0)
+                    local settingCallback = setting.callback or function() end
+
+                    local Label = Instance.new("TextLabel")
+                    Label.Parent = settingFrame
+                    Label.BackgroundTransparency = 1
+                    Label.Size = UDim2.new(0.6, 0, 1, 0)
+                    Label.Font = Enum.Font.Ubuntu
+                    Label.Text = name
+                    Label.TextColor3 = Color3.fromRGB(200, 200, 200)
+                    Label.TextSize = 12
+                    Label.TextXAlignment = Enum.TextXAlignment.Left
+
+                    local ColorBtn = Instance.new("Frame")
+                    ColorBtn.Parent = settingFrame
+                    ColorBtn.BackgroundColor3 = defaultColor
+                    ColorBtn.Position = UDim2.new(0.85, -18, 0.5, -10)
+                    ColorBtn.Size = UDim2.new(0, 20, 0, 20)
+                    local ColorCorner = Instance.new("UICorner")
+                    ColorCorner.CornerRadius = UDim.new(0, 4)
+                    ColorCorner.Parent = ColorBtn
+
+                    -- Простой выбор цвета (цикл по предустановкам)
+                    local colors = {
+                        Color3.fromRGB(255, 0, 0),
+                        Color3.fromRGB(0, 255, 0),
+                        Color3.fromRGB(0, 0, 255),
+                        Color3.fromRGB(255, 255, 0),
+                        Color3.fromRGB(255, 0, 255),
+                        Color3.fromRGB(0, 255, 255),
+                        Color3.fromRGB(255, 255, 255),
+                    }
+                    local colorIndex = 1
+                    for i, c in ipairs(colors) do
+                        if c.R == defaultColor.R and c.G == defaultColor.G and c.B == defaultColor.B then
+                            colorIndex = i
+                            break
+                        end
+                    end
+
+                    local ClickBtn = Instance.new("TextButton")
+                    ClickBtn.Parent = ColorBtn
+                    ClickBtn.BackgroundTransparency = 1
+                    ClickBtn.Size = UDim2.new(1, 0, 1, 0)
+                    ClickBtn.Text = ""
+
+                    ClickBtn.MouseButton1Click:Connect(function()
+                        colorIndex = colorIndex % #colors + 1
+                        local newColor = colors[colorIndex]
+                        ColorBtn.BackgroundColor3 = newColor
+                        settingCallback(newColor)
+                    end)
+
+                    settingFrame.Size = UDim2.new(1, 0, 0, 36)
+                    settingFrame.BackgroundTransparency = 0
+                    settingsHeight = settingsHeight + 40
+
+                elseif setting.type == "toggle" then
+                    local name = setting.name or "Option"
+                    local defaultVal = setting.default or false
+                    local settingCallback = setting.callback or function() end
+
+                    local Label = Instance.new("TextLabel")
+                    Label.Parent = settingFrame
+                    Label.BackgroundTransparency = 1
+                    Label.Size = UDim2.new(0.7, 0, 1, 0)
+                    Label.Font = Enum.Font.Ubuntu
+                    Label.Text = name
+                    Label.TextColor3 = Color3.fromRGB(200, 200, 200)
+                    Label.TextSize = 12
+                    Label.TextXAlignment = Enum.TextXAlignment.Left
+
+                    local sBG = Instance.new("Frame")
+                    sBG.Parent = settingFrame
+                    sBG.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
+                    sBG.Position = UDim2.new(0.85, 0, 0.5, -10)
+                    sBG.Size = UDim2.new(0, 30, 0, 20)
+                    local sCorner = Instance.new("UICorner")
+                    sCorner.CornerRadius = UDim.new(1, 0)
+                    sCorner.Parent = sBG
+
+                    local sCircle = Instance.new("Frame")
+                    sCircle.Parent = sBG
+                    sCircle.BackgroundColor3 = Color3.fromRGB(150, 150, 150)
+                    sCircle.Size = UDim2.new(0, 14, 0, 14)
+                    sCircle.Position = UDim2.new(0, 3, 0.5, -7)
+                    local sCCorner = Instance.new("UICorner")
+                    sCCorner.CornerRadius = UDim.new(1, 0)
+                    sCCorner.Parent = sCircle
+
+                    local sVal = defaultVal
+                    local function updateSToggle()
+                        if sVal then
+                            sBG.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
+                            sCircle.Position = UDim2.new(1, -17, 0.5, -7)
+                            sCircle.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+                        else
+                            sBG.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
+                            sCircle.Position = UDim2.new(0, 3, 0.5, -7)
+                            sCircle.BackgroundColor3 = Color3.fromRGB(150, 150, 150)
+                        end
+                    end
+                    updateSToggle()
+
+                    local sBtn = Instance.new("TextButton")
+                    sBtn.Parent = sBG
+                    sBtn.BackgroundTransparency = 1
+                    sBtn.Size = UDim2.new(1, 0, 1, 0)
+                    sBtn.Text = ""
+
+                    sBtn.MouseButton1Click:Connect(function()
+                        sVal = not sVal
+                        updateSToggle()
+                        settingCallback(sVal)
+                    end)
+
+                    settingFrame.Size = UDim2.new(1, 0, 0, 36)
+                    settingFrame.BackgroundTransparency = 0
+                    settingsHeight = settingsHeight + 40
+                end
+            end
+
+            -- Обновляем размер контейнера
+            local function updateSettingsHeight()
+                SettingsContainer.Size = UDim2.new(1, 0, 0, expanded and settingsHeight or 0)
+                Container.Size = UDim2.new(1, 0, 0, 42 + (expanded and settingsHeight or 0))
+            end
+
+            -- Toggle логика
             local function updateToggle(anim)
                 local time = anim and 0.25 or 0
                 if toggled then
@@ -906,14 +1184,33 @@ function IllunixHub:CreateWindow(options)
                 callback(toggled)
             end)
 
+            -- Шестерёнка - разворачивает настройки
+            GearBtn.MouseButton1Click:Connect(function()
+                expanded = not expanded
+                Utility:Tween(GearBtn, {0.3}, {Rotation = expanded and 90 or 0})
+                updateSettingsHeight()
+            end)
+
             TglButton.MouseEnter:Connect(function()
                 Utility:Tween(ToggleFrame, {0.2}, {BackgroundColor3 = Color3.fromRGB(35, 35, 40)})
             end)
             TglButton.MouseLeave:Connect(function()
                 Utility:Tween(ToggleFrame, {0.2}, {BackgroundColor3 = Color3.fromRGB(30, 30, 35)})
             end)
+
+            GearBtn.MouseEnter:Connect(function()
+                Utility:Tween(GearBtn, {0.2}, {ImageColor3 = Color3.fromRGB(255, 255, 255)})
+            end)
+            GearBtn.MouseLeave:Connect(function()
+                Utility:Tween(GearBtn, {0.2}, {ImageColor3 = Color3.fromRGB(150, 150, 150)})
+            end)
+
+            updateSettingsHeight()
         end
 
+        -- ============================================================
+        -- SLIDER (обычный, без шестерёнки)
+        -- ============================================================
         function Elements:CreateSlider(options)
             local name = options.Name or "Slider"
             local min = options.Range[1] or 0
@@ -950,7 +1247,6 @@ function IllunixHub:CreateWindow(options)
             TitleLab.TextColor3 = Color3.fromRGB(220, 220, 220)
             TitleLab.TextSize = 14
             TitleLab.TextXAlignment = Enum.TextXAlignment.Left
-            TitleLab.TextTruncate = Enum.TextTruncate.AtEnd
 
             local ValueLab = Instance.new("TextLabel")
             ValueLab.Parent = SliderFrame
@@ -1138,7 +1434,6 @@ function IllunixHub:CreateWindow(options)
             KLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
             KLabel.TextSize = 14
             KLabel.TextXAlignment = Enum.TextXAlignment.Left
-            KLabel.TextTruncate = Enum.TextTruncate.AtEnd
 
             local KeyBtn = Instance.new("TextButton")
             KeyBtn.Parent = KFrame
@@ -1225,7 +1520,6 @@ function IllunixHub:CreateWindow(options)
             TitleLab.TextColor3 = Color3.fromRGB(220, 220, 220)
             TitleLab.TextSize = 14
             TitleLab.TextXAlignment = Enum.TextXAlignment.Left
-            TitleLab.TextTruncate = Enum.TextTruncate.AtEnd
             TitleLab.ZIndex = 11
 
             local ArrowLab = Instance.new("TextLabel")
@@ -1420,7 +1714,6 @@ function IllunixHub:CreateWindow(options)
             TitleLab.TextColor3 = Color3.fromRGB(220, 220, 220)
             TitleLab.TextSize = 14
             TitleLab.TextXAlignment = Enum.TextXAlignment.Left
-            TitleLab.TextTruncate = Enum.TextTruncate.AtEnd
 
             local TextBoxBG = Instance.new("Frame")
             TextBoxBG.Parent = InputFrame
